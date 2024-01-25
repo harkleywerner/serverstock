@@ -7,7 +7,7 @@ const host = process.env.SQL_HOST
 const password = process.env.SQL_PASSWORD
 const database = process.env.SQL_DATABASE
 
-const mysql = mysql.createPool({
+const mysqlDB = mysql.createPool({
     host,
     user,
     password,
@@ -15,8 +15,11 @@ const mysql = mysql.createPool({
     waitForConnections: true,
 })
 
-const connection = () => {
-    return mysql
+const getConnection = () => {
+    return mysqlDB.connect((err) => {
+        if (err) throw err
+        console.log(`Conexion en ${database} exitosa`)
+    })
 }
 
-export default connection
+export default getConnection
