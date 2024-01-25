@@ -1,9 +1,17 @@
+import usuarios_model from "../models/usuario.models.js"
 
-const getUsuarios = async (req, res) => {
-    try {
+const usuarios_controler = {
 
-    } catch (error) {
-
+    getUsuarios: async (req, res) => {
+        try {
+            const resultado_usuarios = await usuarios_model.getUsuarios()
+            res.json(resultado_usuarios)
+        } catch (error) {
+            res.json({ "error": 404 })
+            console.log(error)
+        }
     }
-
 }
+
+
+export default usuarios_controler

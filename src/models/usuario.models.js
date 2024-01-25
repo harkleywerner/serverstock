@@ -1,11 +1,15 @@
 import getConnection from "../config/database.js"
 
-
 const usuarios_model = {
 
-    getUsuarios: async (req,res) => {
+    getUsuarios: async (req, res) => {
         const insert = `SELECT * FROM usuarios`
-        getConnection.query(insert)
+
+        const connection = await getConnection()
+
+        const [results] = await connection.query(insert)
+
+        return results
     },
 
 

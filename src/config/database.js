@@ -15,11 +15,8 @@ const mysqlDB = mysql.createPool({
     waitForConnections: true,
 })
 
-const getConnection = () => {
-    return mysqlDB.connect((err) => {
-        if (err) throw err
-        console.log(`Conexion en ${database} exitosa`)
-    })
+const getConnection =  () => {
+    return mysqlDB
 }
 
 export default getConnection
