@@ -7,8 +7,22 @@ const usuarios_controler = {
             const resultado_usuarios = await usuarios_model.getUsuarios()
             res.json(resultado_usuarios)
         } catch (error) {
-            res.json({ "error": 404 })
-            console.log(error)
+            new Error(400)
+        }
+    },
+
+    postUsuario: async (req, res) => {
+        try {
+            const logeo = await usuarios_model.postUsuario(req)
+
+            if (logeo.affectedRows == 1) {
+                res.status(200).json({ message: "verificado" })
+            } else {
+                res.status(204).json({ message: "no identificado" })
+            }
+
+        } catch (error) {
+            new Error(400)
         }
     }
 }

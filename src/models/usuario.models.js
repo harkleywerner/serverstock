@@ -2,16 +2,33 @@ import getConnection from "../config/database.js"
 
 const usuarios_model = {
 
-    getUsuarios: async (req, res) => {
-        const insert = `SELECT * FROM usuarios`
+    getUsuarios: async () => {
+            const select = `SELECT * FROM usuarios`
 
-        const connection = await getConnection()
+            const connection = await getConnection()
 
-        const [results] = await connection.query(insert)
+            const [results] = await connection.query(select)
 
-        return results
+            return results
+
     },
 
+    postUsuario: async (req) => {
+
+
+            const id_usuario = req.body.id_usuario
+
+            const contraseña = req.body.contraseña
+
+            const select = `SELECT * FROM usuarios WHERE id_usuario = ? AND contraseña = ? `
+
+            const connection = await getConnection()
+
+            const [results] = await connection.query(select, [id_usuario, contraseña])
+
+            return results
+
+    }
 
 
 }
