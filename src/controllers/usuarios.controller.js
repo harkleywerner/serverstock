@@ -5,7 +5,7 @@ const usuarios_controler = {
     getUsuarios: async (req, res) => {
         try {
             const resultado_usuarios = await usuarios_model.getUsuarios()
-            res.json(resultado_usuarios)
+            res.status(200).json(resultado_usuarios)
         } catch (error) {
             new Error(400)
         }

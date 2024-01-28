@@ -1,4 +1,4 @@
-import categorias_model from "../models/categorias.model"
+import categorias_model from "../models/categorias.model.js"
 
 const categorias_controller = {
 

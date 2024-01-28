@@ -1,4 +1,4 @@
-import productos_model from "../models/productos.model"
+import productos_model from "../models/productos.model.js"
 
 const productos_controller = {
 

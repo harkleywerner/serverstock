@@ -1,4 +1,4 @@
-import getConnection from "../config/database"
+import getConnection from "../config/database.js"
 
 const productos_model = {
 
