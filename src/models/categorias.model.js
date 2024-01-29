@@ -1,12 +1,13 @@
-import getConnection from "../config/database.js"
+import startConnection from "../config/database.js"
+
 
 const categorias_model = {
 
     getCategorias: async () => {
 
-        const select = `SELECT * FROM categorias `
+        let select = `SELECT * FROM categorias `
 
-        const connection = await getConnection()
+        const connection = await startConnection()
 
         const [results] = await connection.query(select)
 

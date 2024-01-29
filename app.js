@@ -4,7 +4,6 @@ import cors from "cors"
 import usuarios from "./src/router/usuarios.router.js"
 import errorGlobalMiddleware from "./src/middlewares/errorGlobal.middleware.js"
 import productos from "./src/router/productos.router.js"
-import categorias from "./src/router/categorias.router.js"
 import sucursales from "./src/router/sucursales.router.js"
 import stock from "./src/router/stock.router.js"
 
@@ -18,7 +17,6 @@ app.use(cors())
 
 app.use("/usuarios", usuarios)
 app.use("/productos", productos)
-app.use("productos/categorias", categorias)
 app.use("/stock", stock)
 app.use("/sucursales", sucursales)
 

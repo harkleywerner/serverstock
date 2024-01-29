@@ -1,16 +1,30 @@
-import getConnection from "../config/database.js"
+import startConnection from "../config/database.js"
+import concatenarClausulasUtils from "../utils/concatenar_clausulas.utils.js"
 
 const productos_model = {
 
     getProductos: async (req) => {
 
-        const filaIncial = req.body.fila
+        const { fila_incial = 0 } = req.body
 
-        const select = `SELECT * FROM productos LIMIT 15 OFFSET ? `
+        let select = `SELECT * FROM productos WHERE estado IS NULL `
 
-        const connection = await getConnection()
+        const clausulas = {
+            search: "AND nombre LIKE CONCAT( ?, '%') ",
+            categoria_id: "AND categorias_id = ?",
+            fila_incial: " LIMIT 15 OFFSET ?"
+        }
 
-        const [results] = await connection.query(select, [filaIncial])
+        const lista = { ...req.query, fila_incial }
+
+        const [params, selectRestante] = concatenarClausulasUtils({ clausulas, lista })
+
+        select += selectRestante
+
+
+        const connection = await startConnection()
+
+        const [results] = await connection.query(select, params)
 
         return results
     }

@@ -1,13 +1,10 @@
-const listaDeErrores = {
-    500: "Ocurrio un error en el servidor",
-    404 : "Pagina no encontrada",
-    400 : "Algo ha ido mal con la peticion."
-}
 
-const errorGlobalMiddleware = (err, req, res, next) => {
+
+const errorGlobalMiddleware = (err, req, res, next) => { //Este enfoque capta todos los errores que tenga un "identidad declarada"
+    const codigo = err.code || 500
+    console.log(`Status code : ${codigo}`)
     console.error(err.stack)
-    const codigo = isNaN(err.message) ? 500 : err.message
-    res.status(parseInt(codigo)).json({ error: listaDeErrores[codigo] });
+    res.status(parseInt(codigo)).json({ message: err.message, code: codigo, tipo: err.name });
 }
 
 

@@ -1,4 +1,4 @@
-import getConnection from "../config/database.js"
+import startConnection from "../config/database.js"
 
 const stock_model = {
 
@@ -7,7 +7,7 @@ const stock_model = {
 
         const select = "SELECT * FROM stock WHERE id_stock = ?"
 
-        const connection = await getConnection()
+        const connection = await startConnection()
 
         const [results] = await connection.query(select, [id_stock])
 
@@ -21,50 +21,66 @@ const stock_model = {
 
         const select = "SELECT * FROM stock LIMIT 10 OFFSET ?"
 
-        const connection = await getConnection()
+        const connection = await startConnection()
 
         const [results] = await connection.query(select, [filaInicial])
 
         return results
     },
 
-    addStock: async (req) => {
+    addStock: async (req, next) => {
 
         const { usuarios_id, sucursales_id } = req.body
 
         const insert = "INSERT INTO stock (usuarios_id,sucursales_id) VALUES (?,?)"
 
+        let connection;
+
         try {
-            var connection = await getConnection()
+            connection = await startConnection().getConnection()
 
             await connection.beginTransaction()
 
-            const [results] = connection.query(insert, [usuarios_id, sucursales_id])
+            const [results] = await connection.query(insert, [usuarios_id, sucursales_id])
 
             await connection.commit()
 
-            return results
+            return results.insertId
 
         } catch (error) {
             await connection.rollback()
-            new Error(400)
+            next(error)
         }
+        finally{
+            if(connection) await connection.release()
+        }
+
     },
 
-    updateStock: async (req) => {
-        
-        const update = "UPDATE stock SET ultimaEdicion = ?"
+    updateStock: async (req, res, next) => {
+
+        const { id_stock } = req.body
+
+        const update = "UPDATE stock SET ultima_edicion = NOW() WHERE id_stock = ?"
+
+        let connection;
         try {
-            var connection = await getConnection()
+            connection = await startConnection().getConnection()
 
             await connection.beginTransaction()
 
-            connection.query(update)
+            await connection.query(update, [id_stock])
+
+            await connection.commit()
 
         } catch (error) {
             await connection.rollback()
-            new Error(400)
+            next(error)
         }
+        finally{
+            if(connection) await connection.release()
+        }
+    
     }
 }
 

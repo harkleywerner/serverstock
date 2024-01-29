@@ -1,4 +1,4 @@
-import getConnection from "../config/database.js"
+import startConnection from "../config/database.js"
 
 const sucursales_model = {
 
@@ -6,7 +6,7 @@ const sucursales_model = {
     getsucursales: async () => {
         const select = `SELECT * FROM sucursales`
 
-        const connection = await getConnection()
+        const connection = await startConnection()
 
         const [results] = await connection.query(select)
 
@@ -14,7 +14,7 @@ const sucursales_model = {
 
     },
 
-    postSucursal: async (req) => {
+    logginSucursal: async (req) => {
 
         const id_sucursal = req.body.id_usuario
 
@@ -22,7 +22,7 @@ const sucursales_model = {
 
         const select = `SELECT * FROM sucursales WHERE id_sucursal = ? AND contraseña = ? `
 
-        const connection = await getConnection()
+        const connection = await startConnection()
 
         const [results] = await connection.query(select, [id_sucursal, contraseña])
 

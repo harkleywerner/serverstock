@@ -1,46 +1,42 @@
+import detalle_de_stock_model from "../models/detalle_de_stock.model.js"
 import stock_model from "../models/stock.model.js"
+
 
 const stock_controller = {
 
     getAllStock: async (req, res) => {
-        try {
-            const stock = await stock_model.getAllStocks(req, res)
-            res.status(200).json(stock)
-        } catch (error) {
-            new Error(400)
-        }
+
+        const stock = await stock_model.getAllStocks(req, res)
+        res.status(200).json(stock)
+
     },
+
+    getDetalleStock: async (req, res) => {
+        const detalleStock = await detalle_de_stock_model.getDetallesDeStock(req, res)
+        res.status(200).json(detalleStock)
+    },
+
 
     getStock: async (req, res) => {
-        try {
-            const stock = await stock_model.getStock(req)
-            res.status(200).json(stock)
-            return stock
-        } catch (error) {
-            new Error(400)
-        }
+
+        const stock = await stock_model.getStock(req)
+        res.status(200).json(stock)
+    },
+
+    putStock: async (req, res, next) => {
+        await detalle_de_stock_model.updateDetalleDeStock(req, res, next)
+        await stock_model.updateStock(req, res, next)
+        res.status(200).json({ message: "success" })
 
     },
 
-    putStock: async (req, res) => {
-        try {
-            await stock_model.updateStock(req)
-            res.status(200).json({ message: "success" })
-        } catch (error) {
-            new Error(400)
-        }
-    },
+    postStock: async (req, res, next) => {
+        const insertID = await stock_model.addStock(req, next)
+        const newReq = {...req.body = {},insertID}
+        await detalle_de_stock_model.addDetalleDeStock(newReq, next)
+        res.status(200).json({ message: "success" })
 
-    postStock: async (req, res) => {
-        try {
-            await stock_model.addStock(req)
-            //Agregar transsaciones.
-            res.status(200).json({ message: "success" })
-        } catch (error) {
-            new Error(400)
-        }
     }
-
 }
 
 export default stock_controller

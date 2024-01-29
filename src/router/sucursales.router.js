@@ -3,8 +3,22 @@ import sucursales_controler from "../controllers/sucursales.controller.js"
 const router = express.Router()
 
 
-router.get("/", (req, res) => sucursales_controler.getsucursales(req, res))
+router.get("/", async (req, res, next) => {
+    try {
+        await sucursales_controler.getsucursales(req, res)
 
-router.post("/", (req, res) => sucursales_controler.postUsuario(req, res))
+    } catch (error) {
+        next(error)
+    }
+
+})
+
+router.post("/", async (req, res,next) => {
+    try {
+        await sucursales_controler.postUsuario(req, res)
+    } catch (error) {
+        next(error)
+    }
+})
 
 export default router
