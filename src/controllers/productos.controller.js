@@ -3,19 +3,16 @@ import productos_model from "../models/productos.model.js"
 
 const productos_controller = {
 
-    getProductos: async (req, res) => {
-
-        const listaDeProductos = await productos_model.getProductos(req, res)
-        res.status(200).json(listaDeProductos)
+    getProductos: async (req, res, next) => {
+        try {
+            const listaDeProductos = await productos_model.getProductos(req)
+            res.status(200).json(listaDeProductos)
+        } catch (error) {
+            next(error)
+        }
 
     },
 
-    getProductosCategorias: async (req, res) => {
-
-        const categorias = await categorias_model.getCategorias()
-
-        res.status(200).json(categorias)
-    }
 }
 
 

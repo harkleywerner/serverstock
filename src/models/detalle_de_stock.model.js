@@ -16,7 +16,7 @@ const detalle_de_stock_model = {
         return results
     },
 
-    updateDetalleDeStock: async (req, res, next) => {
+    updateDetalleDeStock: async (req, next) => {
 
         const { lista_de_cambios = [] } = req.body
 

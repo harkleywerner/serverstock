@@ -57,7 +57,7 @@ const stock_model = {
 
     },
 
-    updateStock: async (req, res, next) => {
+    updateStock: async (req, next) => {
 
         const { id_stock } = req.body
 
