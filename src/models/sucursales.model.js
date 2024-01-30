@@ -29,8 +29,6 @@ const sucursales_model = {
         return results
 
     }
-
-
 }
 
 
