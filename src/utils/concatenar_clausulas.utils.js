@@ -5,7 +5,7 @@ const concatenarClausulasUtils = ({ clausulas, lista }) => {
 
     for (const key in clausulas) {
 
-        if (lista[key]) {
+        if (lista[key] !== undefined) {
             select += clausulas[key]
             params.push(lista[key])
         }

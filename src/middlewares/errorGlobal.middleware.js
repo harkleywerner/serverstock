@@ -1,6 +1,6 @@
 
 
-const errorGlobalMiddleware = (err, req, res) => { //Este enfoque capta todos los errores que tenga un "identidad declarada"
+const errorGlobalMiddleware = (err, req, res, next) => { //Este enfoque capta todos los errores que tenga un "identidad declarada"
     const codigo = err.code || 500
     console.log(`Status code : ${codigo}`)
     console.error(err.stack)

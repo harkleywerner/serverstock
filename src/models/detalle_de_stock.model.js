@@ -32,7 +32,7 @@ const detalle_de_stock_model = {
 
                 const { cantidad, producto_id, stock_id, accion } = lista_de_cambios[i]
 
-                const verificarTranssaciones = "SELECT COALESCE(count(cantidad)) as cantidad FROM detalle_de_transsaciones WHERE productos_id = ? AND stock_id = ?"
+                const verificarTranssaciones = "SELECT COALESCE(count(cantidad)) as cantidad FROM transsaciones WHERE productos_id = ? AND stock_id = ?"
 
                 const [res] = await connection.query(verificarTranssaciones, [producto_id, stock_id])
 
