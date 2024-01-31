@@ -1,3 +1,4 @@
+import categoria_model from "../models/categorias.model.js"
 import productos_model from "../models/productos.model.js"
 
 
@@ -11,6 +12,16 @@ const productos_controller = {
             next(error)
         }
     },
+
+    getAllCategorias: async (req, res, next) => {
+  
+        try {
+            const listaDeCategorias = await categoria_model.getAllCategorias()
+            res.status(200).json(listaDeCategorias)
+        } catch (error) {
+            next(error)
+        }
+    }
 
 
 }

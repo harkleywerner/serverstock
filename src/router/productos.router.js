@@ -4,5 +4,6 @@ const router = express.Router()
 
 router.get("/", (req, res, next) => productos_controller.getAllProductos(req, res, next))
 
+router.get("/categorias", (req, res, next) => productos_controller.getAllCategorias(req, res, next))
 
 export default router

@@ -3,7 +3,7 @@ import getConnection from "../config/database.js"
 const usuarios_model = {
 
         getUsuarios: async () => {
-                const select = `SELECT * FROM usuarios`
+                const select = `SELECT * FROM usuarios WHERE estado = "activo"`
 
                 const connection = await getConnection()
 

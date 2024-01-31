@@ -16,8 +16,12 @@ app.use(express.json())
 
 app.use(cors())
 
+app.get("/", (req, res) => {
+    res.status(301).redirect("/sucursales")
+})
+
 app.use("/usuarios", usuarios)
-app.use("/trassaciones",trassaciones)
+app.use("/trassaciones", trassaciones)
 app.use("/productos", productos)
 app.use("/stock", stock)
 app.use("/sucursales", sucursales)
