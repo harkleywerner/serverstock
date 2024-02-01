@@ -5,6 +5,6 @@ const router = express.Router()
 
 router.get("/", (req, res, next) => sucursales_controler.getsucursales(req, res, next))
 
-router.post("/", (req, res, next) => sucursales_controler.postUsuario(req, res, next))
+router.post("/", (req, res, next) => sucursales_controler.postSucursal(req, res, next))
 
 export default router

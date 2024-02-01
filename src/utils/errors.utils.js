@@ -6,9 +6,11 @@ export class DataBaseError extends Error {
     }
 }
 
-export class FrontError extends Error {
-    constructor(message) {
+
+export class BackEndError extends Error {
+    constructor(message,code) {
         super(message)
-        this.name = "FrontError"
+        this.name = "BackEndError"
+        this.code = code
     }
 }
