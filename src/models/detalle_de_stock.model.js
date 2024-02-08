@@ -1,17 +1,18 @@
 import startConnection from "../config/database.js"
+import concatenarClausulasUtils from "../utils/concatenar_clausulas.utils.js"
 import { DataBaseError } from "../utils/errors.utils.js"
 
 const detalle_de_stock_model = {
 
     getDetallesDeStock: async (req) => {
 
-        const { stock_id, fila_incial = 0 } = req.body
+        const { stock_id, offset = 0 } = req.body
 
         const select = `SELECT * FROM detalle_de_stock WHERE stock_id = ? LIMIT 15 OFFSET  ?`
 
         const connection = await startConnection()
 
-        const [results] = connection.query(select, [stock_id, fila_incial])
+        const [results] = connection.query(select, [stock_id, offset])
 
         return results
     },

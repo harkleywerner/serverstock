@@ -16,7 +16,7 @@ const productos_model = {
         WHERE p.estado = "activo"
         `
         const clausulas = {
-            search: "AND nombre LIKE CONCAT( ?, '%') ",
+            search: "AND nombre LIKE CONCAT( ?, '%')",
             categoria: "AND categorias_id = ?",
             offset: "GROUP BY p.id_producto LIMIT 15 OFFSET ?"
         }
@@ -26,7 +26,7 @@ const productos_model = {
         const [params, selectRestante] = concatenarClausulasUtils({ clausulas, lista })
 
         select += selectRestante
-
+ 
         const connection = await startConnection()
 
         const [results] = await connection.query(select, params)
@@ -47,15 +47,16 @@ const productos_model = {
         const lista = { ...req.body, offset: parseInt(req.body.offset || 0) }
 
         const clausulas = {
-            categoria: " AND categorias_id = ?",
-            buscador: " AND p.nombre LIKE CONCAT(?,'%')",
-            offset: " LIMIT 15 OFFSET ?"
+            categoria: "AND categorias_id = ?",
+            buscador: "AND p.nombre LIKE CONCAT(?,'%')",
+            offset: "LIMIT 15 OFFSET ?"
         }
 
+     
         const [params, selectRestante] = concatenarClausulasUtils({ lista, clausulas })
 
         select += selectRestante
-
+   
         const [results] = await connection.query(select, [...params])
 
         return results
