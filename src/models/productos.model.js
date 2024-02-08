@@ -5,8 +5,6 @@ const productos_model = {
 
     getAllProductos: async (req) => {
 
-        const { fila_incial = 0 } = req.body
-
         let select = `SELECT
         p.id_producto,
         p.nombre,
@@ -20,10 +18,10 @@ const productos_model = {
         const clausulas = {
             search: "AND nombre LIKE CONCAT( ?, '%') ",
             categoria: "AND categorias_id = ?",
-            fila_incial: "GROUP BY p.id_producto LIMIT 15 OFFSET ?"
+            offset: "GROUP BY p.id_producto LIMIT 15 OFFSET ?"
         }
 
-        const lista = { ...req.query, fila_incial }
+        const lista = { ...req.query, offset: parseInt(req.query.offset || 0) }
 
         const [params, selectRestante] = concatenarClausulasUtils({ clausulas, lista })
 
@@ -36,14 +34,29 @@ const productos_model = {
         return results
     },
 
-    getProducto: async (req) => {
-        const { search } = req.query
+    postObtenerProductos: async (req) => {
 
         const connection = await startConnection()
 
-        const select = "SELECT nombre,id_producto FROM productos WHERE nombre LIKE CONCAT(?,'%')"
+        let select = `
+        SELECT c.nombre as categoria,c.id_categoria ,p.nombre ,p.id_producto FROM productos p
+        INNER JOIN categorias c ON c.id_categoria = p.categorias_id
+        WHERE p.estado = "activo"
+         `
 
-        const [results] = await connection.query(select, [search])
+        const lista = { ...req.body, offset: parseInt(req.body.offset || 0) }
+
+        const clausulas = {
+            categoria: " AND categorias_id = ?",
+            buscador: " AND p.nombre LIKE CONCAT(?,'%')",
+            offset: " LIMIT 15 OFFSET ?"
+        }
+
+        const [params, selectRestante] = concatenarClausulasUtils({ lista, clausulas })
+
+        select += selectRestante
+
+        const [results] = await connection.query(select, [...params])
 
         return results
     }

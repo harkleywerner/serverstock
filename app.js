@@ -8,14 +8,20 @@ import sucursales from "./src/router/sucursales.router.js"
 import stock from "./src/router/stock.router.js"
 import trassaciones from "./src/router/trassaciones.router.js"
 import { BackEndError } from "./src/utils/errors.utils.js"
+import rateLimitGloalMiddleware from "./src/middlewares/rateLimitGlobal.middleware.js"
 
 configServer()
+
 const app = express()
 const port = process.env.PORT
+const limiter = rateLimitGloalMiddleware()
 
 app.use(express.json())
 
 app.use(cors())
+
+app.use("/", limiter)
+
 
 app.get("/", (req, res) => {
     res.status(301).redirect("/sucursales")

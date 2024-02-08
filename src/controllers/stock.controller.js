@@ -24,6 +24,7 @@ const stock_controller = {
     },
 
     putStock: async (req, res, next) => {
+
         try {
             await detalle_de_stock_model.updateDetalleDeStock(req, next)
             await stock_model.updateStock(req, next)
@@ -35,12 +36,11 @@ const stock_controller = {
     },
 
     postStock: async (req, res, next) => {
-
         try {
-            const insertID = await stock_model.addStock(req, next)
-            const newReq = { ...req.body = {}, insertID }
-            await detalle_de_stock_model.addDetalleDeStock(newReq, next)
+            await stock_model.addStock(req)
+            
             res.status(200).json({ message: "success" })
+
         } catch (error) {
             next(error)
         }

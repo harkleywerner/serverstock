@@ -1,4 +1,6 @@
 import startConnection from "../config/database.js"
+import { DataBaseError } from "../utils/errors.utils.js"
+import detalle_de_stock_model from "./detalle_de_stock.model.js"
 
 const stock_model = {
 
@@ -28,33 +30,44 @@ const stock_model = {
         return results
     },
 
-    addStock: async (req, next) => {
 
-        const { usuarios_id, sucursales_id } = req.body
 
-        const insert = "INSERT INTO stock (usuarios_id,sucursales_id) VALUES (?,?)"
+
+
+    addStock: async (req) => {
+
+        const { usuarios_id = 1, sucursales_id = 1, listaDeNuevoStock } = req.body;
+
+        const insert = "INSERT INTO stock (usuarios_id,sucursales_id,lote) VALUES (?,?,?)";
+
+        const ultimaStock = "SELECT ABS(COUNT(*) + 1) as lote FROM stock WHERE sucursales_id = ?" //Este enfoque sirve para determinar que numero de lote es
+
 
         let connection;
 
         try {
-            connection = await startConnection().getConnection()
 
-            await connection.beginTransaction()
+            connection = await startConnection().getConnection();
 
-            const [results] = await connection.query(insert, [usuarios_id, sucursales_id])
+            await connection.beginTransaction();
+
+            const [[{ lote }]] = await connection.query(ultimaStock, [1])
+
+            const [{ insertId }] = await connection.query(insert, [usuarios_id, sucursales_id, lote]);
+
+            await detalle_de_stock_model.addDetalleDeStock({ connection, insertId, listaDeNuevoStock })
 
             await connection.commit()
 
-            return results.insertId
-
         } catch (error) {
-            await connection.rollback()
-            next(error)
-        }
-        finally{
-            if(connection) await connection.release()
-        }
 
+            await connection.rollback();
+
+            throw error
+
+        } finally {
+            if (connection) await connection.release();
+        }
     },
 
     updateStock: async (req, next) => {
@@ -77,10 +90,10 @@ const stock_model = {
             await connection.rollback()
             next(error)
         }
-        finally{
-            if(connection) await connection.release()
+        finally {
+            if (connection) await connection.release()
         }
-    
+
     }
 }
 

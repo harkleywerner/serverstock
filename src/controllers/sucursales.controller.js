@@ -3,7 +3,6 @@ import sucursales_model from "../models/sucursales.model.js"
 const sucursales_controler = {
 
     getsucursales: async (req, res, next) => {
-
         try {
             const resultado_sucursales = await sucursales_model.getsucursales()
             res.status(200).json(resultado_sucursales)

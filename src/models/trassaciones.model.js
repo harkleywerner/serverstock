@@ -27,7 +27,7 @@ const trassaciones_model = {
 
             const [results] = await connection.query(verificarCantidad ? verficiarTranssacion : verificarStock, [id_producto])
 
-            if (Math.abs(cantidad) > results.total) throw new DataBaseError("La cantidad ingresada es superior a la dispobilidad en el stock", 422)
+            if (Math.abs(cantidad) > results.total) throw new DataBaseError("La cantidad ingresada es incorrecta a la disponible en stock", 422)
 
             let restante = Math.abs(cantidad)
 
@@ -50,10 +50,8 @@ const trassaciones_model = {
 
                 await connection.query(insert, [Math.min(total, verificarCantidad ? -restante : restante), id_producto, 1, 1, stock_id])
 
-                restante - total
+                restante -= total
             }
-
-
             await connection.commit()
 
         } catch (error) {

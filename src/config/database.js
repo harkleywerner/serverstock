@@ -7,7 +7,7 @@ const host = process.env.SQL_HOST
 const password = process.env.SQL_PASSWORD
 const database = process.env.SQL_DATABASE
 
-const mysqlDB = await mysql.createPool({
+const mysqlDB =  mysql.createPool({
     host,
     user,
     password,

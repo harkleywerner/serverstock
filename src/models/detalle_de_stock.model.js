@@ -61,33 +61,22 @@ const detalle_de_stock_model = {
         }
     },
 
-    addDetalleDeStock: async (req, next) => {
-
-        const { listaDeNuevoStock = [], insertID } = req
-
-        let connection;
+    addDetalleDeStock: async ({ listaDeNuevoStock, connection, insertId, }) => {
         try {
-
-            connection = await startConnection().getConnection()
-
-            await connection.beginTransaction()
+            const insertDetalles = "INSERT INTO detalle_de_stock (cantidad,productos_id,stock_id) VALUES(?,?,?)";
 
             for (const i of listaDeNuevoStock) {
-
-                const { producto_id, cantidad } = listaDeNuevoStock[i]
-
-                const post = "INSERT INTO detalle_de_stock (cantidad,productos_id,stock_id) VALUES(?,?,?)"
-
-                await connection.query(post, [cantidad, producto_id, insertID])
+                const { id_producto, cantidad } = i;
+                await connection.query(insertDetalles, [cantidad, id_producto, insertId]);
             }
 
-            await connection.commit()
         } catch (error) {
-            await connection.rollback()
-            next(error)
-        }
-        finally {
-            if (connection) await connection.release()
+
+            if (error?.errno == 1452) {
+                throw new DataBaseError("Algun item del que intentas ingresar no se encuentra disponible.", 400)
+            } else {
+                throw error
+            }
         }
     }
 }
