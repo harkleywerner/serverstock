@@ -30,17 +30,13 @@ const stock_model = {
         return results
     },
 
-
-
-
-
     addStock: async (req) => {
 
-        const { usuarios_id = 1, sucursales_id = 1, listaDeNuevoStock } = req.body;
+        const { usuarios_id = 1, id_sucursal = 1, listaDeNuevoStock } = req.body;
 
-        const insert = "INSERT INTO stock (usuarios_id,sucursales_id,lote) VALUES (?,?,?)";
+        const insert = "INSERT INTO stock (id_usuario,id_sucursal,lote) VALUES (?,?,?)";
 
-        const ultimaStock = "SELECT ABS(COUNT(*) + 1) as lote FROM stock WHERE sucursales_id = ?" //Este enfoque sirve para determinar que numero de lote es
+        const ultimaStock = "SELECT ABS(COUNT(*) + 1) as lote FROM stock WHERE id_sucursal = ?" //Este enfoque sirve para determinar que numero de lote es
 
 
         let connection;
@@ -53,11 +49,17 @@ const stock_model = {
 
             const [[{ lote }]] = await connection.query(ultimaStock, [1])
 
-            const [{ insertId }] = await connection.query(insert, [usuarios_id, sucursales_id, lote]);
+            const [{ insertId }] = await connection.query(insert, [usuarios_id, id_sucursal, lote]);
 
-            await detalle_de_stock_model.addDetalleDeStock({ connection, insertId, listaDeNuevoStock })
+            for (const producto of listaDeNuevoStock) {
+                await detalle_de_stock_model.addDetalleDeStock({ connection, id_stock: insertId, producto })
+            }
 
             await connection.commit()
+
+            return {
+                lote
+            }
 
         } catch (error) {
 
@@ -70,11 +72,13 @@ const stock_model = {
         }
     },
 
-    updateStock: async (req, next) => {
+    updateStock: async (req) => {
 
-        const { id_stock } = req.body
+        const { id_stock, lista_de_cambios } = req.body
 
         const update = "UPDATE stock SET ultima_edicion = NOW() WHERE id_stock = ?"
+        const verificarTranssaciones = "SELECT COALESCE(count(cantidad)) as cantidad FROM transsaciones WHERE id_producto = ? AND id_stock = ?"
+        const verificarProductoEnStock = "SELECT 1 FROM detalle_de_stock WHERE id_producto = ? AND id_stock = ? "
 
         let connection;
         try {
@@ -82,13 +86,38 @@ const stock_model = {
 
             await connection.beginTransaction()
 
+            for (const producto of lista_de_cambios) {
+
+                const { id_producto, accion, cantidad, nombre } = producto
+
+                if (accion == "post") {
+
+                    const [res] = await connection.query(verificarProductoEnStock, [id_producto, id_stock])
+
+                    if (res.length > 0) throw new DataBaseError(`El producto [${nombre}] ya se encuentra en el stock`, 422)
+
+                    await detalle_de_stock_model.addDetalleDeStock({ producto, connection, id_stock })
+
+                } else if (accion == "put") {
+
+                    const [res] = await connection.query(verificarTranssaciones, [id_producto, id_stock])
+
+                    if (Math.abs(cantidad) < res.cantidad) throw new DataBaseError(`La cantidad del producto ${nombre} es menor al numero de transsaciones.`, 422)
+
+                    await detalle_de_stock_model.updateDetalleDeStock({ producto, connection, id_stock })
+                } else {
+                    await detalle_de_stock_model.removeDetalleDeStock({ producto, connection })
+                }
+
+            }
+
             await connection.query(update, [id_stock])
 
             await connection.commit()
 
         } catch (error) {
             await connection.rollback()
-            next(error)
+            throw error
         }
         finally {
             if (connection) await connection.release()

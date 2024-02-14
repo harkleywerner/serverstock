@@ -9,6 +9,7 @@ import stock from "./src/router/stock.router.js"
 import trassaciones from "./src/router/trassaciones.router.js"
 import { BackEndError } from "./src/utils/errors.utils.js"
 import rateLimitGloalMiddleware from "./src/middlewares/rateLimitGlobal.middleware.js"
+import detalleDeStock from "./src/router/detalleDeStock.router.js"
 
 configServer()
 
@@ -32,6 +33,7 @@ app.use("/trassaciones", trassaciones)
 app.use("/productos", productos)
 app.use("/stock", stock)
 app.use("/sucursales", sucursales)
+app.use("/detalleDeStock",detalleDeStock)
 
 app.use((req, res, next) => {
     const error = new BackEndError("Ruta no encontrada", 404)

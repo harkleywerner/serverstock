@@ -1,6 +1,6 @@
 import rateLimit from "express-rate-limit"
 
-const rateLimitGloalMiddleware = (limitCount = 8555) => {
+const rateLimitGloalMiddleware = (limitCount = 14123211) => {
 
    return rateLimit({
       windowMs: 15 * 60 * 1000,

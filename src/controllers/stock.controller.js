@@ -1,4 +1,3 @@
-import detalle_de_stock_model from "../models/detalle_de_stock.model.js"
 import stock_model from "../models/stock.model.js"
 
 
@@ -26,7 +25,6 @@ const stock_controller = {
     putStock: async (req, res, next) => {
 
         try {
-            await detalle_de_stock_model.updateDetalleDeStock(req, next)
             await stock_model.updateStock(req, next)
             res.status(200).json({ message: "success" })
         } catch (error) {
@@ -36,10 +34,10 @@ const stock_controller = {
     },
 
     postStock: async (req, res, next) => {
+
         try {
-            await stock_model.addStock(req)
-            
-            res.status(200).json({ message: "success" })
+            const response = await stock_model.addStock(req)
+            res.status(200).json({ message: "success", ...response })
 
         } catch (error) {
             next(error)

@@ -19,11 +19,11 @@ const trassaciones_model = {
             const verificarStock = //En caso de cantidad positiva 
                 `SELECT COALESCE(SUM(s.cantidad),0) - COALESCE(SUM(t.cantidad),0) as total
             FROM detalle_de_stock s
-            LEFT JOIN transsaciones t ON s.productos_id = t.productos_id
-            WHERE s.productos_id = ?
+            LEFT JOIN transsaciones t ON s.id_producto = t.id_producto
+            WHERE s.id_producto = ?
             `
 
-            const verficiarTranssacion = `SELECT SUM(cantidad) as total FROM transsaciones WHERE productos_id = ? ` //En caso de cantidad negativa 
+            const verficiarTranssacion = `SELECT SUM(cantidad) as total FROM transsaciones WHERE id_producto = ? ` //En caso de cantidad negativa 
 
             const [results] = await connection.query(verificarCantidad ? verficiarTranssacion : verificarStock, [id_producto])
 
@@ -35,20 +35,20 @@ const trassaciones_model = {
                 const verificarStock2 =
                     `
                     SELECT
-                 s.stock_id,
+                 s.id_stock,
                 COALESCE(SUM(s.cantidad),0) - COALESCE(SUM(t.cantidad),0) as total
                 FROM detalle_de_stock s
-                 LEFT JOIN transsaciones t ON s.productos_id = t.productos_id
-                 WHERE s.productos_id = ?
-                GROUP BY s.stock_id
+                 LEFT JOIN transsaciones t ON s.id_producto = t.id_producto
+                 WHERE s.id_producto = ?
+                GROUP BY s.id_stock
                 HAVING total > 0
                 LIMIT 1
                 `
-                const [{ stock_id, total }] = await connection.query(verificarStock2, [id_producto])
+                const [{ id_stock, total }] = await connection.query(verificarStock2, [id_producto])
 
-                const insert = "INSERT INTO transsaciones (productos_id,cantidad,sucursales_id,usuarios_id,stock_id) VALUES(?,?,?,?,?)"
+                const insert = "INSERT INTO transsaciones (id_producto,cantidad,id_sucursal,id_usuario,id_stock) VALUES(?,?,?,?,?)"
 
-                await connection.query(insert, [Math.min(total, verificarCantidad ? -restante : restante), id_producto, 1, 1, stock_id])
+                await connection.query(insert, [Math.min(total, verificarCantidad ? -restante : restante), id_producto, 1, 1, id_stock])
 
                 restante -= total
             }
