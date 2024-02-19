@@ -15,8 +15,7 @@ const stock_controller = {
     getStock: async (req, res, next) => {
         try {
             const stock = await stock_model.getStock(req)
-            const detalleStock = await detalle_de_stock_model.getDetallesDeStock(req, res)
-            res.status(200).json({ stock, detalleStock })
+            res.status(200).json(stock)
         } catch (error) {
             next(error)
         }
@@ -25,8 +24,8 @@ const stock_controller = {
     putStock: async (req, res, next) => {
 
         try {
-            await stock_model.updateStock(req, next)
-            res.status(200).json({ message: "success" })
+            const message = await stock_model.updateStock(req, next)
+            res.status(200).json({...message})
         } catch (error) {
             next(error)
         }

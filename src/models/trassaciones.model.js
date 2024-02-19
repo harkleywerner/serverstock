@@ -1,9 +1,8 @@
 import startConnection from "../config/database.js"
-import { DataBaseError } from "../utils/errors.utils.js"
 
 const trassaciones_model = {
 
-    addTranssacion: async (req, next) => {
+    addTranssacion: async (req) => {
 
         const { cantidad, id_producto } = req.body
 
@@ -16,50 +15,79 @@ const trassaciones_model = {
 
             await connection.beginTransaction()
 
-            const verificarStock = //En caso de cantidad positiva 
-                `SELECT COALESCE(SUM(s.cantidad),0) - COALESCE(SUM(t.cantidad),0) as total
-            FROM detalle_de_stock s
-            LEFT JOIN transsaciones t ON s.id_producto = t.id_producto
-            WHERE s.id_producto = ?
-            `
-
-            const verficiarTranssacion = `SELECT SUM(cantidad) as total FROM transsaciones WHERE id_producto = ? ` //En caso de cantidad negativa 
-
-            const [results] = await connection.query(verificarCantidad ? verficiarTranssacion : verificarStock, [id_producto])
-
-            if (Math.abs(cantidad) > results.total) throw new DataBaseError("La cantidad ingresada es incorrecta a la disponible en stock", 422)
-
             let restante = Math.abs(cantidad)
 
             while (restante > 0) {//Esto no va dar loop infinito, por el primer filtro de verificacion, ya que va hacer las restas de forma precisa.
-                const verificarStock2 =
+
+                const verificarStock =
                     `
-                    SELECT
-                 s.id_stock,
-                COALESCE(SUM(s.cantidad),0) - COALESCE(SUM(t.cantidad),0) as total
-                FROM detalle_de_stock s
-                 LEFT JOIN transsaciones t ON s.id_producto = t.id_producto
-                 WHERE s.id_producto = ?
-                GROUP BY s.id_stock
-                HAVING total > 0
-                LIMIT 1
+                    SELECT 
+                    s.total_cantidad - COALESCE(t.total_transacciones,0) AS total_stock,
+                    COALESCE(t.total_transacciones,0) as devoluciones_permitidas,
+                    s.id_stock
+                    FROM (
+                        SELECT id_producto, SUM(cantidad) AS total_cantidad, id_stock
+                        FROM detalle_de_stock
+                        WHERE id_producto = ?
+                        GROUP BY id_stock
+                    ) AS s
+                    LEFT JOIN (
+                        SELECT SUM(cantidad) AS total_transacciones, id_stock 
+                        FROM transsaciones
+                        WHERE id_producto = ?
+                        GROUP BY id_stock
+                    ) t ON t.id_stock = s.id_stock
+                    HAVING ${verificarCantidad ? "devoluciones_permitidas > 0 ORDER BY t.id_stock DESC" : "total_stock > 0 "}
+                    LIMIT 1
                 `
-                const [{ id_stock, total }] = await connection.query(verificarStock2, [id_producto])
+                const [res] = await connection.query(verificarStock, [id_producto, id_producto])
 
-                const insert = "INSERT INTO transsaciones (id_producto,cantidad,id_sucursal,id_usuario,id_stock) VALUES(?,?,?,?,?)"
+                console.log(res)
 
-                await connection.query(insert, [Math.min(total, verificarCantidad ? -restante : restante), id_producto, 1, 1, id_stock])
+                if (res.length == 0) {
+                    return {
+                        tipo: "warning",
+                        data: { cantidad: Math.abs(cantidad) - restante }, //Arreglar esto de los mensajes
+                    }
+                }
 
-                restante -= total
+                const { total_stock, devoluciones_permitidas, id_stock } = res[0]
+
+                const insert = "INSERT INTO transsaciones (cantidad,id_producto,id_sucursal,id_usuario,id_stock) VALUES(?,?,?,?,?)"
+
+                const transsacionPositiva = restante > total_stock ? total_stock : restante
+
+                const trassacionNegativa = restante > devoluciones_permitidas ? devoluciones_permitidas : restante
+
+                const verificacion = verificarCantidad ? -trassacionNegativa : transsacionPositiva
+
+                await connection.query(insert, [verificacion, id_producto, 1, 1, id_stock])
+
+                restante -= Math.abs(verificacion)
+
             }
             await connection.commit()
 
+            return {
+                tipo: "success",
+                data: { cantidad: Math.abs(cantidad) - restante }, //Arreglar esto de los mensajes
+            }
+
+
         } catch (error) {
             await connection.rollback()
-            next(error)
+            throw error
         }
         finally {
             if (connection) await connection.release()
+        }
+    },
+
+    syncTranssacionDeDetallesDeStock: () => { //Esto se va activar, cuando salte la alerta en el front.
+        try {
+
+        } catch (error) {
+
         }
     }
 

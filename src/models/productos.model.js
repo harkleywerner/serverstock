@@ -5,14 +5,21 @@ const productos_model = {
 
     getAllProductos: async (req) => {
 
+
         let select = `SELECT
         p.id_producto,
         p.nombre,
-        COALESCE(SUM(s.cantidad), 0) - COALESCE(SUM(t.cantidad), 0) as cantidad_total,
+        GREATEST(COALESCE(SUM(s.cantidad), 0) - COALESCE(SUM(t.cantidad), 0),0) as cantidad_total,
         -COALESCE(SUM(t.cantidad),0)  as devoluciones_permitidas
         FROM productos p
-        LEFT JOIN detalle_de_stock s ON p.id_producto = s.id_producto
-        LEFT JOIN transsaciones t ON p.id_producto = t.id_producto
+        LEFT JOIN (
+        SELECT id_producto,SUM(cantidad) as cantidad FROM detalle_de_stock
+        GROUP BY id_producto
+        ) s ON p.id_producto = s.id_producto
+        LEFT JOIN (
+        SELECT id_producto,SUM(cantidad) as cantidad FROM transsaciones
+        GROUP BY id_producto
+        ) t ON p.id_producto = t.id_producto
         WHERE p.estado = "activo"
         `
         const clausulas = {

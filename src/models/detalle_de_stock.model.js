@@ -5,40 +5,29 @@ const detalle_de_stock_model = {
 
     getDetallesDeStock: async (req) => {
 
-        const { id_stock, offset = 0 } = req.body
+        const { id_stock } = req.query
 
-        const select = `SELECT * FROM detalle_de_stock WHERE id_stock = ? LIMIT 15 OFFSET  ?`
-
-        const connection = await startConnection()
-
-        const [results] = await connection.query(select, [id_stock, offset])
-
-        return results
-    },
-
-
-    getUltimoDetalleDeStock: async (req) => {
-        const select = `
+        let select = `
         SELECT
-         s.id_detalle_de_stock,
-         s.cantidad,
-         p.nombre as nombre,
-         p.id_producto,
-         c.nombre as categoria
-    FROM detalle_de_stock  s INNER JOIN
-    productos p  ON s.id_producto = p.id_producto
-    INNER JOIN categorias c ON c.id_categoria = p.id_categoria
-    WHERE s.id_stock =(SELECT MAX(id_stock) FROM stock) LIMIT 15 
-
+        s.id_detalle_de_stock,
+        s.cantidad,
+        p.nombre as nombre,
+        p.id_producto,
+        s.id_stock,
+        c.nombre as categoria
+        FROM detalle_de_stock  s INNER JOIN
+        productos p  ON s.id_producto = p.id_producto
+        INNER JOIN categorias c ON c.id_categoria = p.id_categoria
+        WHERE s.id_stock = ?
         `
 
         const connection = await startConnection()
 
-        const [results] = await connection.query(select)
-
+        const [results] = await connection.query(select, [id_stock])
 
         return results
     },
+
 
     updateDetalleDeStock: async ({ connection, producto }) => {
 
@@ -67,7 +56,11 @@ const detalle_de_stock_model = {
 
             const { id_producto, cantidad } = producto;
 
-            await connection.query(insertDetalles, [cantidad, id_producto, id_stock]);
+            const [res] = await connection.query(insertDetalles, [cantidad, id_producto, id_stock]);
+
+            return {
+                insert_id: res.insertId
+            }
 
         } catch (error) {
 
