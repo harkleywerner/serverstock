@@ -5,10 +5,12 @@ const router = express.Router()
 
 router.get("/", (req, res, next) => stock_controller.getAllStock(req, res, next))
 
-router.get("/gestion", (req, res, next) => stock_controller.getStock(req, res, next))
+router.get("/gestion", (req, res, next) => stock_controller.getStockGestion(req, res, next))
 
-router.put("/gestion", (req, res, next) => stock_controller.putStock(req, res, next))
+router.post("/",(req,res,next) => stock_controller.postStock(req,res,next))
 
-router.post("/nuevo", (req, res, next) => stock_controller.postStock(req, res, next))
+router.put("/gestion", (req, res, next) => stock_controller.putStockGestion(req, res, next))
+
+router.post("/nuevo", (req, res, next) => stock_controller.postNuevoStock(req, res, next))
 
 export default router

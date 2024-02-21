@@ -5,25 +5,47 @@ import detalle_de_stock_model from "./detalle_de_stock.model.js"
 
 const stock_model = {
 
-    getStock: async (req) => {
+    getUltimoStock: async () => {
 
-        const { id_stock } = req.query
-
-        const select = `
-        SELECT id_stock,lote FROM stock
-        WHERE id_stock =  ?
-
-        `
-
-        const selectUltimoStock = `
+        const selectUltimoStock = //Este enfoque sirve para seleccionar el ultimo stock, en caso de que no se indique un id
+            `    
         SELECT id_stock,lote FROM stock
         ORDER BY  id_stock DESC
         LIMIT 1
         `
-
         const connection = await startConnection()
 
-        const [results] = await connection.query(id_stock ? select : selectUltimoStock, [id_stock])
+        const [results] = await connection.query(selectUltimoStock)
+
+        return results
+
+    },
+
+    getStockByIdProducto: async (req, res) => {
+
+        let select = `
+        SELECT
+        s.id_stock,
+        s.lote
+       FROM stock s
+       INNER JOIN detalle_de_stock ds 
+       ON ds.id_stock = s.id_stock 
+        `
+        const connection = await startConnection()
+
+        const clausulas = {
+            id_producto: "WHERE ds.id_producto = ?",
+            lote: "AND s.lote LIKE CONCAT( ?, '%')",
+            offset: "LIMIT 15 OFFSET ?"
+        }
+
+        const lista = { ...req.body, offset: parseInt(req.body.offset) }
+
+        const [params, selectRestante] = concatenarClausulasUtils({ clausulas, lista })
+
+        select += selectRestante
+
+        const [results] = await connection.query(select, [...params])
 
         return results
 
@@ -34,6 +56,7 @@ const stock_model = {
         let select = `
         SELECT k.id_stock,
         k.lote,
+        k.fecha,
         COALESCE(s.total_absoluto,0) AS total_absoluto,
         COALESCE(s.total_absoluto,0) - COALESCE(t.total_transacciones,0) AS total_relativo
         FROM stock k
@@ -54,7 +77,7 @@ const stock_model = {
             offset: "GROUP BY k.id_stock LIMIT 15 OFFSET ?"
         }
 
-        const [params,selectRestante] = concatenarClausulasUtils({ clausulas, lista: {...req.query, offset: parseInt(req.query.offset)} })
+        const [params, selectRestante] = concatenarClausulasUtils({ clausulas, lista: { ...req.query, offset: parseInt(req.query.offset) } })
 
         select += selectRestante
 
@@ -138,7 +161,6 @@ const stock_model = {
        WHERE d.id_stock = ?
        GROUP BY d.id_stock
         `
-
         const failed_commit = {
             "put": {},
             "delete": {}

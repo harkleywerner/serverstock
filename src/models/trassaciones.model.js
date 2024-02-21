@@ -17,7 +17,7 @@ const trassaciones_model = {
 
             let restante = Math.abs(cantidad)
 
-            while (restante > 0) {//Esto no va dar loop infinito, por el primer filtro de verificacion, ya que va hacer las restas de forma precisa.
+            while (restante > 0) {
 
                 const verificarStock =
                     `
@@ -42,12 +42,10 @@ const trassaciones_model = {
                 `
                 const [res] = await connection.query(verificarStock, [id_producto, id_producto])
 
-                console.log(res)
-
                 if (res.length == 0) {
                     return {
                         tipo: "warning",
-                        data: { cantidad: Math.abs(cantidad) - restante }, //Arreglar esto de los mensajes
+                        data: { cantidad: Math.abs(cantidad) - restante },
                     }
                 }
 
@@ -83,13 +81,7 @@ const trassaciones_model = {
         }
     },
 
-    syncTranssacionDeDetallesDeStock: () => { //Esto se va activar, cuando salte la alerta en el front.
-        try {
 
-        } catch (error) {
-
-        }
-    }
 
 }
 

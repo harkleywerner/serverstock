@@ -33,7 +33,7 @@ const productos_model = {
         const [params, selectRestante] = concatenarClausulasUtils({ clausulas, lista })
 
         select += selectRestante
- 
+
         const connection = await startConnection()
 
         const [results] = await connection.query(select, params)
@@ -61,7 +61,7 @@ const productos_model = {
 
 
 
-     
+
         const [params, selectRestante] = concatenarClausulasUtils({ lista, clausulas })
 
         select += selectRestante

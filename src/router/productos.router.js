@@ -6,6 +6,6 @@ router.get("/", (req, res, next) => productos_controller.getAllProductos(req, re
 
 router.get("/categorias", (req, res, next) => productos_controller.getAllCategorias(req, res, next))
 
-router.post("/", (req, res, next) => productos_controller.postObtenerProductos(req, res, next))
+router.post("/", (req, res, next) => productos_controller.postProducto(req, res, next))
 
 export default router

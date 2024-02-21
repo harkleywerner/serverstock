@@ -14,7 +14,7 @@ const productos_controller = {
         }
     },
 
-    postObtenerProductos: async (req, res, next) => {
+    postProducto: async (req, res, next) => {
 
         try {
             const listaDeProductos = await productos_model.postObtenerProductos(req)
