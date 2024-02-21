@@ -23,7 +23,6 @@ app.use(cors())
 
 app.use("/", limiter)
 
-
 app.get("/", (req, res) => {
     res.status(301).redirect("/sucursales")
 })
@@ -48,5 +47,5 @@ app.get("/", (req, res) => {
 app.use(errorGlobalMiddleware);
 
 app.listen(port, () => {
-    console.log(`Sever on en el puerto ${port}`)
+    console.log(`Server on en el puerto ${port}`)
 })

@@ -28,7 +28,7 @@ const detalle_de_stock_model = {
         return results
     },
 
-    getDetalleDeStockByIdStock: async (req) => {
+    getDetalleDeStockByIdStock: async (req) => { ///TERMINAR
 
         const connection = await startConnection()
 
@@ -63,7 +63,7 @@ const detalle_de_stock_model = {
 
         try {
 
-            const { cantidad, id_producto, id_detalle_de_stock } = producto
+            const { cantidad, id_detalle_de_stock } = producto
 
             const update = "UPDATE detalle_de_stock SET cantidad = ?, ultima_edicion = NOW() WHERE id_detalle_de_stock = ?  "
 

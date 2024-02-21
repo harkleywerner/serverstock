@@ -37,14 +37,13 @@ const stock_controller = {
             const results = await stock_model.getStockByIdProducto(req)
             res.status(200).json(results)
         } catch (error) {
-            next(error)
         }
     },
 
     postNuevoStock: async (req, res, next) => {
 
         try {
-            const response = await stock_model.addStock(req)
+            const response = await stock_model.addStock(req,next)
             res.status(200).json({ message: "success", ...response })
 
         } catch (error) {

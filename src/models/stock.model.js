@@ -21,7 +21,7 @@ const stock_model = {
 
     },
 
-    getStockByIdProducto: async (req, res) => {
+    getStockByIdProducto: async (req) => {
 
         let select = `
         SELECT
@@ -88,7 +88,7 @@ const stock_model = {
         return results
     },
 
-    addStock: async (req) => {
+    addStock: async (req, next) => {
 
         const { usuarios_id = 1, id_sucursal = 1, listaDeNuevoStock } = req.body;
 
@@ -100,7 +100,6 @@ const stock_model = {
         let connection;
 
         try {
-
             connection = await startConnection().getConnection();
 
             await connection.beginTransaction();
@@ -121,16 +120,16 @@ const stock_model = {
 
         } catch (error) {
 
-            await connection.rollback();
+            next(error)
 
-            throw error
+            await connection.rollback();
 
         } finally {
             if (connection) await connection.release();
         }
     },
 
-    updateStock: async (req) => {
+    updateStock: async (req, next) => {
 
         const { id_stock, lista_de_cambios } = req.body
 
@@ -232,7 +231,7 @@ const stock_model = {
 
         } catch (error) {
             await connection.rollback()
-            throw error
+            next(error)
         }
         finally {
             if (connection) await connection.release()
