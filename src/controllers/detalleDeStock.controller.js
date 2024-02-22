@@ -1,4 +1,4 @@
-import detalle_de_stock_model from "../models/detalle_de_stock.model.js"
+import detalle_de_stock_model from "../models/detalleDeStockModel/detalle_de_stock.model.js"
 
 const detalle_de_stock_controller = {
 

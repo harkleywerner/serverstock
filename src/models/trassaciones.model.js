@@ -2,7 +2,7 @@ import startConnection from "../config/database.js"
 
 const trassaciones_model = {
 
-    addTranssacion: async (req) => {
+    addTranssacion: async (req, next) => {
 
         const { cantidad, id_producto } = req.body
 
@@ -73,8 +73,8 @@ const trassaciones_model = {
 
 
         } catch (error) {
+            next(error)
             await connection.rollback()
-            throw error
         }
         finally {
             if (connection) await connection.release()

@@ -1,5 +1,5 @@
-import startConnection from "../config/database.js"
-import { DataBaseError } from "../utils/errors.utils.js"
+import startConnection from "../../config/database.js"
+import { DataBaseError } from "../../utils/errors.utils.js"
 
 const detalle_de_stock_model = {
 
@@ -32,7 +32,7 @@ const detalle_de_stock_model = {
 
         const connection = await startConnection()
 
-        const {id_producto,id_stock} = req.body
+        const { id_producto, id_stock } = req.body
 
         let select = `
           SELECT 

@@ -1,7 +1,7 @@
 import startConnection from "../config/database.js"
 import concatenarClausulasUtils from "../utils/concatenar_clausulas.utils.js"
 import { DataBaseError } from "../utils/errors.utils.js"
-import detalle_de_stock_model from "./detalle_de_stock.model.js"
+import detalle_de_stock_model from "./detalleDeStockModel/detalle_de_stock.model.js"
 
 const stock_model = {
 
@@ -230,8 +230,8 @@ const stock_model = {
             }
 
         } catch (error) {
-            await connection.rollback()
             next(error)
+            await connection.rollback()
         }
         finally {
             if (connection) await connection.release()
