@@ -8,7 +8,7 @@ const productos_controller = {
 
         try {
             const listaDeProductos = await productos_model.getAllProductos(req)
-            res.status(200).json(listaDeProductos)
+            res.status(200).json({ tipo: "success", data: listaDeProductos })
         } catch (error) {
             next(error)
         }
@@ -17,8 +17,8 @@ const productos_controller = {
     postProducto: async (req, res, next) => {
 
         try {
-            const listaDeProductos = await productos_model.postObtenerProductos(req)
-            res.status(200).json(listaDeProductos)
+            const listaDeProductos = await productos_model.getProductoSimple(req)
+            res.status(200).json({ tipo: "success", data: listaDeProductos })
         } catch (error) {
             next(error)
         }
@@ -28,7 +28,7 @@ const productos_controller = {
 
         try {
             const listaDeCategorias = await categoria_model.getAllCategorias()
-            res.status(200).json(listaDeCategorias)
+            res.status(200).json({ tipo: "success", data: listaDeCategorias })
         } catch (error) {
             next(error)
         }

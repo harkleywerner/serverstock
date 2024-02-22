@@ -6,7 +6,7 @@ const stock_controller = {
     getAllStock: async (req, res, next) => {
         try {
             const stock = await stock_model.getAllStocks(req, res)
-            res.status(200).json(stock)
+            res.status(200).json({ tipo: "success", data: stock })
         } catch (error) {
             next(error)
         }
@@ -15,7 +15,7 @@ const stock_controller = {
     getStockGestion: async (req, res, next) => {
         try {
             const stock = await stock_model.getUltimoStock(req)
-            res.status(200).json(stock)
+            res.status(200).json({ data: stock[0], tipo: "success" })
         } catch (error) {
             next(error)
         }
@@ -37,13 +37,14 @@ const stock_controller = {
             const results = await stock_model.getStockByIdProducto(req)
             res.status(200).json(results)
         } catch (error) {
+            next(error)
         }
     },
 
     postNuevoStock: async (req, res, next) => {
 
         try {
-            const response = await stock_model.addStock(req,next)
+            const response = await stock_model.addStock(req, next)
             res.status(200).json({ message: "success", ...response })
 
         } catch (error) {

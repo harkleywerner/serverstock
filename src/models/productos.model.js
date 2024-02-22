@@ -5,7 +5,6 @@ const productos_model = {
 
     getAllProductos: async (req) => {
 
-
         let select = `SELECT
         p.id_producto,
         p.nombre,
@@ -41,7 +40,7 @@ const productos_model = {
         return results
     },
 
-    postObtenerProductos: async (req) => {
+    getProductoSimple: async (req) => {
 
         const connection = await startConnection()
 
@@ -58,9 +57,6 @@ const productos_model = {
             buscador: "AND p.nombre LIKE CONCAT(?,'%')",
             offset: "LIMIT 15 OFFSET ?"
         }
-
-
-
 
         const [params, selectRestante] = concatenarClausulasUtils({ lista, clausulas })
 
