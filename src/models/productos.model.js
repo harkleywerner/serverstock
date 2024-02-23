@@ -1,4 +1,4 @@
-import startConnection from "../config/database.js"
+import pool from "../config/database.js"
 import concatenarClausulasUtils from "../utils/concatenar_clausulas.utils.js"
 
 const productos_model = {
@@ -33,7 +33,7 @@ const productos_model = {
 
         select += selectRestante
 
-        const connection = await startConnection()
+        const connection = await pool
 
         const [results] = await connection.query(select, params)
 
@@ -42,14 +42,14 @@ const productos_model = {
 
     getProductoSimple: async (req) => {
 
-        const connection = await startConnection()
+        const connection = await pool
 
         let select = `
-        SELECT c.nombre as categoria,c.id_categoria ,p.nombre ,p.id_producto FROM productos p
-        INNER JOIN categorias c ON c.id_categoria = p.id_categoria
+        SELECT c.nombre as categoria,c.id_categoria ,p.nombre ,p.id_producto 
+        FROM productos p
+        INNER JOIN categorias c ON c.id_categoria = p.id_categoria 
         WHERE p.estado = "activo"
          `
-
         const lista = { ...req.body, offset: parseInt(req.body.offset || 0) }
 
         const clausulas = {

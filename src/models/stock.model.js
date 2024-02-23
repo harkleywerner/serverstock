@@ -1,6 +1,5 @@
-import startConnection from "../config/database.js"
+import pool from "../config/database.js"
 import concatenarClausulasUtils from "../utils/concatenar_clausulas.utils.js"
-import { DataBaseError } from "../utils/errors.utils.js"
 import detalle_de_stock_model from "./detalleDeStockModel/detalle_de_stock.model.js"
 
 const stock_model = {
@@ -13,7 +12,7 @@ const stock_model = {
         ORDER BY  id_stock DESC
         LIMIT 1
         `
-        const connection = await startConnection()
+        const connection = await pool
 
         const [results] = await connection.query(selectUltimoStock)
 
@@ -31,7 +30,7 @@ const stock_model = {
        INNER JOIN detalle_de_stock ds 
        ON ds.id_stock = s.id_stock 
         `
-        const connection = await startConnection()
+        const connection = await pool
 
         const clausulas = {
             id_producto: "WHERE ds.id_producto = ?",
@@ -81,7 +80,7 @@ const stock_model = {
 
         select += selectRestante
 
-        const connection = await startConnection()
+        const connection = await pool
 
         const [results] = await connection.query(select, [...params])
 
@@ -99,8 +98,14 @@ const stock_model = {
 
         let connection;
 
+        const failed_commit = { "f_post": [] }
+
+        const success_commit = { "s_post": {} }
+        const { f_post } = failed_commit
+        const { s_post } = success_commit
+
         try {
-            connection = await startConnection().getConnection();
+            connection = await pool.getConnection();
 
             await connection.beginTransaction();
 
@@ -108,20 +113,20 @@ const stock_model = {
 
             const [{ insertId }] = await connection.query(insert, [usuarios_id, id_sucursal, lote]);
 
-            for (const producto of listaDeNuevoStock) {
-                await detalle_de_stock_model.addDetalleDeStock({ connection, id_stock: insertId, producto })
-            }
+            await detalle_de_stock_model.addDetalleDeStock({ id_stock: insertId, connection, pruductos_post: listaDeNuevoStock, f_post, s_post })
 
             await connection.commit()
 
             return {
-                lote
+                lote,
+                id_stock: insertId,
+                failed_commit,
+                success_commit
             }
 
         } catch (error) {
 
             next(error)
-
             await connection.rollback();
 
         } finally {
@@ -133,102 +138,53 @@ const stock_model = {
 
         const { id_stock, lista_de_cambios } = req.body
 
+        const { patch, post, delete: remove } = lista_de_cambios
+
+
         const update = "UPDATE stock SET ultima_edicion = NOW() WHERE id_stock = ?"
 
-        const verificarTranssacionesPUT = `
-        SELECT SUM(cantidad) as cantidad,id_stock
-        FROM transsaciones
-        WHERE id_producto = ? and id_stock = ?
-        GROUP BY id_stock
-        `
 
-        const verificarTranssacionesDELETE = `
-        SELECT d.cantidad_stock  as cantidad_stock ,
-        COALESCE(t.cantidad_transsacion,0) as cantidad_transsacion
-        FROM (
-       SELECT SUM(cantidad) as cantidad_stock,id_stock,id_producto
-       FROM detalle_de_stock
-       WHERE id_producto = ?
-       GROUP BY id_stock
-       ) as d
-       LEFT JOIN (
-       SELECT SUM(cantidad) as cantidad_transsacion,id_stock,id_producto
-       FROM transsaciones
-       WHERE id_producto = ?
-       GROUP BY id_stock
-       ) t ON t.id_stock = d.id_stock
-       WHERE d.id_stock = ?
-       GROUP BY d.id_stock
-        `
         const failed_commit = {
-            "put": {},
-            "delete": {}
-        }
-        const success_commit = {
-            "put": {},
-            "post": [],
-            "delete": []
+            f_post: [],
+            f_patch: {},
+            f_delete: []
         }
 
-        const verificarProductoEnStock = "SELECT 1 FROM detalle_de_stock WHERE id_producto = ? AND id_stock = ? "
+        const success_commit = {
+            s_post: {},
+            s_patch: {},
+            s_delete: []
+        }
+
+        const { s_delete, s_patch, s_post } = success_commit
+        const { f_delete, f_patch, f_post } = failed_commit
 
         let connection;
+
         try {
-            connection = await startConnection().getConnection()
+            connection = await pool.getConnection()
 
             await connection.beginTransaction()
 
-            for (const producto of lista_de_cambios) {
+            await detalle_de_stock_model.
+                addDetalleDeStock({ connection, id_stock, f_post, s_post, pruductos_post: post })
 
-                const { id_producto, accion, cantidad, nombre } = producto
+            await detalle_de_stock_model.
+                removeDetalleDeStock({ connection, s_delete, f_delete, productos_delete: remove, id_stock })
 
-                if (accion == "post") {
+            await detalle_de_stock_model.
+                updateDetalleDeStock({ connection, pruductos_patch: patch, id_stock, f_patch, s_patch })
 
-                    const [res] = await connection.query(verificarProductoEnStock, [id_producto, id_stock])
 
-                    if (res.length > 0) throw new DataBaseError(`El producto [${nombre}] ya se encuentra en el stock`, 422)
-
-                    const { insert_id } = await detalle_de_stock_model.addDetalleDeStock({ producto, connection, id_stock })
-
-                    success_commit["post"] = [...success_commit["post"], { ...producto, id_detalle_de_stock: insert_id }]
-
-                } else if (accion == "put") {
-
-                    const [res] = await connection.query(verificarTranssacionesPUT, [id_producto, id_stock, cantidad])
-
-                    if (res[0]?.cantidad > cantidad) {
-                        failed_commit["put"] = { ...failed_commit["put"], [id_producto]: { ...producto, cantidad: parseInt(res[0].cantidad) } }
-                    } else {
-                        await detalle_de_stock_model.updateDetalleDeStock({ producto, connection, id_stock })
-                        success_commit["put"] = { ...success_commit["put"], [id_producto]: producto }
-                    }
-                } else {
-
-                    const [res] = await connection.query(verificarTranssacionesDELETE, [id_producto, id_producto, id_stock])
-
-                    const { cantidad_stock, cantidad_transsacion } = res[0] || {}
-
-                    if ((cantidad_stock - cantidad) < cantidad_transsacion && res.length !== 0) {
-                        failed_commit["delete"] = { ...failed_commit["delete"], [id_producto]: producto }
-                    }
-                    else {
-                        await detalle_de_stock_model.removeDetalleDeStock({ producto, connection })
-                        success_commit["delete"] = [...success_commit["delete"], id_producto]
-                    }
-                }
-
+            if (Object.keys(success_commit).length > 0) {
+                await connection.query(update, [id_stock])
             }
-
-            await connection.query(update, [id_stock])
-
             await connection.commit()
 
             return {
-                tipo: "success",
-                failed_commit,
-                success_commit
+                success_commit,
+                failed_commit
             }
-
         } catch (error) {
             next(error)
             await connection.rollback()

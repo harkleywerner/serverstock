@@ -7,18 +7,13 @@ const host = process.env.SQL_HOST
 const password = process.env.SQL_PASSWORD
 const database = process.env.SQL_DATABASE
 
-const mysqlDB =  mysql.createPool({
+const pool =  mysql.createPool({
     host,
     user,
     password,
     database,
     waitForConnections: true,
+    connectionLimit : 5
 })
 
-const startConnection =  () => {
-
-       return mysqlDB
-
-}
-
-export default startConnection
+export default pool

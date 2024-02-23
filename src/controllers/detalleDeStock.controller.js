@@ -20,8 +20,7 @@ const detalle_de_stock_controller = {
         } catch (error) {
             next(error)
         }
-    }
-
+    },
 
 }
 

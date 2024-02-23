@@ -1,11 +1,11 @@
-import startConnection from "../config/database.js"
+import pool from "../config/database.js"
 
 const categoria_model = {
     getAllCategorias: async () => {
 
         const select = `SELECT * FROM categorias`
 
-        const connection = await startConnection()
+        const connection = await pool
 
         const [results] = await connection.query(select)
        

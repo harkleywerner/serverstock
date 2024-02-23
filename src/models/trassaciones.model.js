@@ -1,4 +1,4 @@
-import startConnection from "../config/database.js"
+import pool from "../config/database.js"
 
 const trassaciones_model = {
 
@@ -11,7 +11,7 @@ const trassaciones_model = {
         let connection;
 
         try {
-            connection = await startConnection().getConnection()
+            connection = await pool.getConnection()
 
             await connection.beginTransaction()
 

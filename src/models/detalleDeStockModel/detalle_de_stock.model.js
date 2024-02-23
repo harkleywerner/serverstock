@@ -1,5 +1,6 @@
-import startConnection from "../../config/database.js"
-import { DataBaseError } from "../../utils/errors.utils.js"
+import pool from "../../config/database.js"
+import validation from "./detalle_de_stock_model.validations.js"
+
 
 const detalle_de_stock_model = {
 
@@ -13,7 +14,6 @@ const detalle_de_stock_model = {
         s.cantidad,
         p.nombre as nombre,
         p.id_producto,
-        s.id_stock,
         c.nombre as categoria
         FROM detalle_de_stock  s INNER JOIN
         productos p  ON s.id_producto = p.id_producto
@@ -21,7 +21,7 @@ const detalle_de_stock_model = {
         WHERE s.id_stock = ?
         `
 
-        const connection = await startConnection()
+        const connection = await pool
 
         const [results] = await connection.query(select, [id_stock])
 
@@ -30,7 +30,7 @@ const detalle_de_stock_model = {
 
     getDetalleDeStockByIdStock: async (req) => { ///TERMINAR
 
-        const connection = await startConnection()
+        const connection = await pool
 
         const { id_producto, id_stock } = req.body
 
@@ -59,67 +59,72 @@ const detalle_de_stock_model = {
     },
 
 
-    updateDetalleDeStock: async ({ connection, producto }) => {
+    updateDetalleDeStock: async ({ id_stock, pruductos_patch = [], connection ,f_patch = {},s_patch = {}}) => {
 
-        try {
+        const update = "UPDATE detalle_de_stock SET cantidad = ?, ultima_edicion = NOW() WHERE id_detalle_de_stock = ?  "
 
-            const { cantidad, id_detalle_de_stock } = producto
 
-            const update = "UPDATE detalle_de_stock SET cantidad = ?, ultima_edicion = NOW() WHERE id_detalle_de_stock = ?  "
+        for (const producto of pruductos_patch) {
 
-            const [results] = await connection.query(update, [Math.abs(cantidad), id_detalle_de_stock])
+            const { cantidad, id_detalle_de_stock, id_producto } = producto
 
-            return results
+            const { cantidad_minima, verificarCantidadTranssaciones } = await validation.validationUpdateDetalleDeStock({ cantidad, connection, id_producto, id_stock })
 
-        } catch (error) {
-            if (error?.errno == 1452) {
-                throw new DataBaseError("Algun producto del que intentas editar no se encuentra disponible.", 422)
+            if (verificarCantidadTranssaciones) {
+                f_patch[id_producto] = { cantidad: cantidad_minima }
             } else {
-                throw error
+
+                await connection.query(update, [Math.abs(cantidad), id_detalle_de_stock])
+
+                s_patch[id_producto] = { cantidad }
             }
         }
+
     },
 
-    addDetalleDeStock: async ({ producto, connection, id_stock, }) => {
-        try {
-            const insertDetalles = "INSERT INTO detalle_de_stock (cantidad,id_producto,id_stock) VALUES(?,?,?)";
+    addDetalleDeStock: async ({ connection, pruductos_post = [], id_stock, f_post = [], s_post = {} }) => {
+
+        const insert = "INSERT INTO detalle_de_stock (cantidad,id_producto,id_stock) VALUES(?,?,?)";
+
+
+
+        for (const producto of pruductos_post) {
 
             const { id_producto, cantidad } = producto;
 
-            const [res] = await connection.query(insertDetalles, [cantidad, id_producto, id_stock]);
+            const resValidation = await validation.validationAddDetalleDeStock({ connection, id_producto, id_stock })
 
-            return {
-                insert_id: res.insertId
-            }
-
-        } catch (error) {
-
-            if (error?.errno == 1452) {
-                throw new DataBaseError("Algun producto del que intentas ingresar no se encuentra disponible.", 422)
+            if (resValidation) {
+                f_post.push(id_producto)
             } else {
-                throw error
+                const [res] = await connection.query(insert, [cantidad, id_producto, id_stock]);
+                s_post[id_producto] = { id_detalle_de_stock: res.insertId,id_producto}
             }
         }
+
     },
 
-    removeDetalleDeStock: async ({ producto, connection }) => {
+    removeDetalleDeStock: async ({ connection, productos_delete = [],s_delete = [],f_delete =[], id_stock }) => {
+
+        const deletDetalles = "DELETE FROM  detalle_de_stock WHERE id_detalle_de_stock = ?";
 
 
-        try {
-            const deletDetalles = "DELETE FROM  detalle_de_stock WHERE id_detalle_de_stock = ?";
+        for (const producto of productos_delete) {
 
-            const { id_detalle_de_stock } = producto;
+            const { id_detalle_de_stock, id_producto, cantidad } = producto;
 
-            await connection.query(deletDetalles, [id_detalle_de_stock]);
 
-        } catch (error) {
 
-            if (error?.errno == 1452) {
-                throw new DataBaseError("Algun producto del que intentas eliminar no se encuentra disponible.", 422)
+            const res = await validation.validationRemoveDetalleDeStock({ id_producto, cantidad, connection, id_stock })
+
+            if (res) {
+                f_delete.push(id_producto)
             } else {
-                throw error
+               s_delete.push(id_producto)
+                await connection.query(deletDetalles, [id_detalle_de_stock]);
             }
         }
+
     }
 }
 

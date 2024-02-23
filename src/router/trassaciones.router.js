@@ -3,6 +3,6 @@ import trassaciones_controller from "../controllers/transsaciones.controller.js"
 const router = express.Router()
 
 
-router.post("/", (req, res, next) => trassaciones_controller.postTranssacion(req, res, next))
+router.post("/",trassaciones_controller.postTranssacion)
 
 export default router

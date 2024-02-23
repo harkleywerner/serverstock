@@ -1,11 +1,11 @@
-import getConnection from "../config/database.js"
+import pool from "../config/database.js"
 
 const usuarios_model = {
 
         getUsuarios: async () => {
                 const select = `SELECT * FROM usuarios WHERE estado = "activo"`
 
-                const connection = await getConnection()
+                const connection = await pool
 
                 const [results] = await connection.query(select)
 
@@ -21,7 +21,7 @@ const usuarios_model = {
 
                 const select = `SELECT * FROM usuarios WHERE id_usuario = ? AND contraseña = ? `
 
-                const connection = await getConnection()
+                const connection = await pool
 
                 const [results] = await connection.query(select, [id_usuario, contraseña])
 

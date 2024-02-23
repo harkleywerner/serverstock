@@ -2,10 +2,10 @@ import express from "express"
 import productos_controller from "../controllers/productos.controller.js"
 const router = express.Router()
 
-router.get("/", (req, res, next) => productos_controller.getAllProductos(req, res, next))
+router.get("/",productos_controller.getAllProductos)
 
-router.get("/categorias", (req, res, next) => productos_controller.getAllCategorias(req, res, next))
+router.get("/categorias",productos_controller.getAllCategorias)
 
-router.post("/", (req, res, next) => productos_controller.postProducto(req, res, next))
+router.post("/",productos_controller.postProducto)
 
 export default router
