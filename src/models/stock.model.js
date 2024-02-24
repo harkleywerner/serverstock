@@ -95,13 +95,14 @@ const stock_model = {
 
         const ultimaStock = "SELECT ABS(COUNT(*) + 1) as lote FROM stock WHERE id_sucursal = ?" //Este enfoque sirve para determinar que numero de lote es
 
-
         let connection;
 
         const failed_commit = { "f_post": [] }
 
         const success_commit = { "s_post": {} }
+       
         const { f_post } = failed_commit
+       
         const { s_post } = success_commit
 
         try {

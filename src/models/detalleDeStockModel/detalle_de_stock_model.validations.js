@@ -35,7 +35,7 @@ const detalle_de_stock_model_validaciones = {
 
     const select = "SELECT 1 FROM detalle_de_stock WHERE id_producto = ? AND id_stock = ?"
 
-    const [res] = await connection.query(select, [id_stock, id_producto])
+    const [res] = await connection.query(select, [id_producto,id_stock])
 
     const verificarProductoEnStock = res.length > 0
 
