@@ -16,7 +16,7 @@ const detalle_de_stock_controller = {
     postDetalleDeStock: async (req, res, next) => {
         try {
             const stockSeleccionado = await detalle_de_stock_model.getDetalleDeStockByIdStock(req)
-            res.status(200).json(stockSeleccionado)
+            res.status(200).json({ tipo: "success", data: stockSeleccionado })
         } catch (error) {
             next(error)
         }
