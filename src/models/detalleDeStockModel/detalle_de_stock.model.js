@@ -92,7 +92,7 @@ const detalle_de_stock_model = {
 
             const { id_producto, cantidad } = producto;
 
-            const resValidation = await validation.validationAddDetalleDeStock({ connection, id_producto : 1, id_stock })
+            const resValidation = await validation.validationAddDetalleDeStock({ connection, id_producto, id_stock })
 
             if (resValidation) {
                 f_post.push(id_producto)
