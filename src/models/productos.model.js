@@ -5,8 +5,10 @@ const productos_model = {
 
     getAllProductos: async (req) => {
 
+        console.log(req)
+
         let select = `SELECT
-        p.id_producto,
+        p.id_producto,                             
         p.nombre,
         GREATEST(COALESCE(SUM(s.cantidad), 0) - COALESCE(SUM(t.cantidad), 0),0) as cantidad_total,
         -COALESCE(SUM(t.cantidad),0)  as devoluciones_permitidas

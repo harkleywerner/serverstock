@@ -28,38 +28,41 @@ const detalle_de_stock_model = {
         return results
     },
 
-    getDetalleDeStockByIdStock: async (req) => { ///TERMINAR
+    getDetalleDeStockByIdProducto: async (req) => { ///TERMINAR
 
         const connection = await pool
 
         const { id_producto, id_stock } = req.body
 
         let select = `
-          SELECT 
-          s.cantidad - COALESCE(t.cantidad,0) AS total_stock,
-          COALESCE(t.cantidad,0) as devoluciones_permitidas
-          FROM (
-              SELECT id_producto, SUM(cantidad) AS cantidad, id_stock
-              FROM detalle_de_stock
-              WHERE id_producto = ? 
-              AND 
-              id_stock = (SELECT id_stock FROM stock WHERE lote = ?)
-              GROUP BY id_stock
-          ) AS s
-          LEFT JOIN (
-              SELECT SUM(cantidad) AS cantidad , id_stock 
-              FROM transsaciones
-              WHERE id_producto = ?
-              GROUP BY id_stock
-          ) t ON t.id_stock = s.id_stock
+        SELECT
+       s.id_producto,
+        GREATEST(COALESCE(SUM(s.cantidad), 0) - COALESCE(SUM(t.cantidad), 0),0) as cantidad_total,
+        -COALESCE(SUM(t.cantidad),0)  as devoluciones_permitidas
+        FROM (
+        SELECT id_producto,SUM(cantidad) as cantidad 
+        FROM detalle_de_stock
+        WHERE id_stock = ? AND id_producto = ?
+        GROUP BY id_producto
+        ) AS s
+        LEFT JOIN (
+        SELECT id_producto,SUM(cantidad) as cantidad 
+        FROM transsaciones
+        WHERE id_stock = ? AND id_producto = ?
+        GROUP BY id_producto
+        ) t ON t.id_producto = s.id_producto
+        GROUP BY s.id_producto
           `
 
-        const [results] = await connection.query(select, [id_producto, id_producto])
+        const params = [id_producto, id_stock]
 
+        const [results] = await connection.query(select, [...params, ...params])
+
+        return results
     },
 
 
-    updateDetalleDeStock: async ({ id_stock, pruductos_patch = [], connection ,f_patch = {},s_patch = {}}) => {
+    updateDetalleDeStock: async ({ id_stock, pruductos_patch = [], connection, f_patch = {}, s_patch = {} }) => {
 
         const update = "UPDATE detalle_de_stock SET cantidad = ?, ultima_edicion = NOW() WHERE id_detalle_de_stock = ?  "
 
@@ -98,13 +101,13 @@ const detalle_de_stock_model = {
                 f_post.push(id_producto)
             } else {
                 const [res] = await connection.query(insert, [cantidad, id_producto, id_stock]);
-                s_post[id_producto] = { id_detalle_de_stock: res.insertId,id_producto}
+                s_post[id_producto] = { id_detalle_de_stock: res.insertId, id_producto }
             }
         }
 
     },
 
-    removeDetalleDeStock: async ({ connection, productos_delete = [],s_delete = [],f_delete =[], id_stock }) => {
+    removeDetalleDeStock: async ({ connection, productos_delete = [], s_delete = [], f_delete = [], id_stock }) => {
 
         const deletDetalles = "DELETE FROM  detalle_de_stock WHERE id_detalle_de_stock = ?";
 
@@ -120,7 +123,7 @@ const detalle_de_stock_model = {
             if (res) {
                 f_delete.push(id_producto)
             } else {
-               s_delete.push(id_producto)
+                s_delete.push(id_producto)
                 await connection.query(deletDetalles, [id_detalle_de_stock]);
             }
         }
