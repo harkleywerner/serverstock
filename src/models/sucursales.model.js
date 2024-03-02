@@ -27,7 +27,6 @@ const sucursales_model = {
         const [results] = await connection.query(select, [id_sucursal, contraseña])
 
         return results
-
     }
 }
 

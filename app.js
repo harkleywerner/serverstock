@@ -10,6 +10,7 @@ import trassaciones from "./src/router/trassaciones.router.js"
 import { BackEndError } from "./src/utils/errors.utils.js"
 import rateLimitGloalMiddleware from "./src/middlewares/rateLimitGlobal.middleware.js"
 import detalleDeStock from "./src/router/detalleDeStock.router.js"
+import session from "express-session"
 
 configServer()
 
@@ -17,30 +18,41 @@ const app = express()
 const port = process.env.PORT
 const limiter = rateLimitGloalMiddleware()
 
+
 app.use(express.json())
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 
-app.use(cors())
 
-app.use("/", limiter)
+app.use(session({
+    secret: 'stock-1bsf-456g-aff',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        // secure : true,//Si establezco esto como true quiere decir que solo acepta solicuted HTTPS
+        httpOnly: false,
+        maxAge: 1500000
+    },
+}))
 
 app.get("/", (req, res) => {
     res.status(301).redirect("/sucursales")
 })
 
+
+app.use("/", limiter)
 app.use("/usuarios", usuarios)
 app.use("/trassaciones", trassaciones)
 app.use("/productos", productos)
 app.use("/stock", stock)
 app.use("/sucursales", sucursales)
-app.use("/detalleDeStock",detalleDeStock)
+app.use("/detalleDeStock", detalleDeStock)
 
 app.use((req, res, next) => {
     const error = new BackEndError("Ruta no encontrada", 404)
     next(error)
-})
-
-app.get("/", (req, res) => {
-    res.status(301).redirect("/sucursales")
 })
 
 

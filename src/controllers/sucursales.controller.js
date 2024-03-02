@@ -26,7 +26,9 @@ const sucursales_controler = {
             next(error)
         }
 
-    }
+    },
+
+
 }
 
 

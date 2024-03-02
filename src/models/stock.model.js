@@ -51,7 +51,7 @@ const stock_model = {
     },
 
     getAllStocks: async (req) => {
-
+        
         let select = `
         SELECT k.id_stock,
         k.lote,
@@ -76,14 +76,15 @@ const stock_model = {
             offset: "GROUP BY k.id_stock LIMIT 15 OFFSET ?"
         }
 
-        const [params, selectRestante] = concatenarClausulasUtils({ clausulas, lista: { ...req.query, offset: parseInt(req.query.offset) } })
+        const [params, selectRestante] = concatenarClausulasUtils({ clausulas, lista: { ...req.query, offset: parseInt(req.query.offset ?? 0) } })
 
         select += selectRestante
-
+   
         const connection = await pool
-
+      
         const [results] = await connection.query(select, [...params])
 
+      
         return results
     },
 
