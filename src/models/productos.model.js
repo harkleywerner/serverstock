@@ -5,22 +5,17 @@ const productos_model = {
 
     getAllProductos: async (req) => {
 
-        console.log(req)
-
         let select = `SELECT
-        p.id_producto,                             
+        p.id_producto,
         p.nombre,
-        GREATEST(COALESCE(SUM(s.cantidad), 0) - COALESCE(SUM(t.cantidad), 0),0) as cantidad_total,
-        -COALESCE(SUM(t.cantidad),0)  as devoluciones_permitidas
+        COALESCE(SUM(d.cantidad),0) - COALESCE(t.cantidad,0) as cantidad_total,
+        -COALESCE(t.cantidad,0) AS devoluciones_permitidas
         FROM productos p
+        LEFT JOIN detalle_de_stock d ON d.id_producto = p.id_producto
         LEFT JOIN (
-        SELECT id_producto,SUM(cantidad) as cantidad FROM detalle_de_stock
+        SELECT SUM(cantidad) as cantidad,id_producto FROM transsaciones
         GROUP BY id_producto
-        ) s ON p.id_producto = s.id_producto
-        LEFT JOIN (
-        SELECT id_producto,SUM(cantidad) as cantidad FROM transsaciones
-        GROUP BY id_producto
-        ) t ON p.id_producto = t.id_producto
+        ) t ON t.id_producto = d.id_producto
         WHERE p.estado = "activo"
         `
         const clausulas = {
@@ -41,6 +36,7 @@ const productos_model = {
 
         return results
     },
+
 
     getProductoSimple: async (req) => {
 

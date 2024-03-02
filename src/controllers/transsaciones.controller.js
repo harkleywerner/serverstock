@@ -1,5 +1,4 @@
-import trassaciones_model from "../models/trassaciones.model.js"
-
+import trassaciones_model from "../models/transsacionesModel/trassaciones.model.js"
 
 
 
@@ -16,7 +15,6 @@ const trassaciones_controller = {
             next(error)
         }
     },
-
 
 
 }

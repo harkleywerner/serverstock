@@ -6,7 +6,7 @@ const stock_model = {
 
     getUltimoStock: async () => {
 
-        const selectUltimoStock = //Este enfoque sirve para seleccionar el ultimo stock, en caso de que no se indique un id
+        const selectUltimoStock =
             `    
         SELECT id_stock,lote FROM stock
         ORDER BY  id_stock DESC
@@ -100,9 +100,9 @@ const stock_model = {
         const failed_commit = { "f_post": [] }
 
         const success_commit = { "s_post": {} }
-       
+
         const { f_post } = failed_commit
-       
+
         const { s_post } = success_commit
 
         try {

@@ -28,7 +28,7 @@ const detalle_de_stock_model = {
         return results
     },
 
-    getDetalleDeStockByIdProducto: async (req) => { ///TERMINAR
+    getDetalleDeStockByIdProducto: async (req) => {
 
         const connection = await pool
 
@@ -36,27 +36,16 @@ const detalle_de_stock_model = {
 
         let select = `
         SELECT
-       s.id_producto,
-        GREATEST(COALESCE(SUM(s.cantidad), 0) - COALESCE(SUM(t.cantidad), 0),0) as cantidad_total,
-        -COALESCE(SUM(t.cantidad),0)  as devoluciones_permitidas
-        FROM (
-        SELECT id_producto,SUM(cantidad) as cantidad 
-        FROM detalle_de_stock
-        WHERE id_stock = ? AND id_producto = ?
-        GROUP BY id_producto
-        ) AS s
-        LEFT JOIN (
-        SELECT id_producto,SUM(cantidad) as cantidad 
-        FROM transsaciones
-        WHERE id_stock = ? AND id_producto = ?
-        GROUP BY id_producto
-        ) t ON t.id_producto = s.id_producto
-        GROUP BY s.id_producto
+        -COALESCE(SUM(t.cantidad), 0) AS devoluciones_permitidas,
+        s.cantidad - COALESCE(SUM(t.cantidad), 0) AS cantidad_total
+        FROM detalle_de_stock s
+        LEFT JOIN transsaciones t ON
+         t.id_producto = s.id_producto AND t.id_stock = s.id_stock
+        WHERE s.id_stock = ? AND s.id_producto = ?
+        GROUP BY s.cantidad;
           `
 
-        const params = [id_producto, id_stock]
-
-        const [results] = await connection.query(select, [...params, ...params])
+        const [results] = await connection.query(select, [id_stock, id_producto])
 
         return results
     },
@@ -88,8 +77,6 @@ const detalle_de_stock_model = {
     addDetalleDeStock: async ({ connection, pruductos_post = [], id_stock, f_post = [], s_post = {} }) => {
 
         const insert = "INSERT INTO detalle_de_stock (cantidad,id_producto,id_stock) VALUES(?,?,?)";
-
-
 
         for (const producto of pruductos_post) {
 
