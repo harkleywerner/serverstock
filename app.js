@@ -12,6 +12,7 @@ import { BackEndError } from "./src/utils/errors.utils.js"
 import corsConfigMiddleware from "./src/middlewares/corsConfig.middleware.js"
 import sucursalSessionMiddleware from "./src/middlewares/sucursalSession.middleware.js.js"
 import usuarioSessionMiddleware from "./src/middlewares/usuarioSession.middleware.js"
+import { validationSucursalSessionMiddleware } from "./src/middlewares/validationSucursalSession.middleware.js"
 
 configServer()
 
@@ -32,12 +33,12 @@ app.get("/", (req, res) => {
 
 
 app.use("/", limiter)
-app.use("/usuarios", usuarios)
-app.use("/trassaciones", trassaciones)
-app.use("/productos", productos)
-app.use("/stock", stock)
+app.use("/stock", validationSucursalSessionMiddleware, stock)
+app.use("/stock/usuarios", usuarios)
+app.use("/stock/trassaciones", trassaciones)
+app.use("/stock/productos", productos)
+app.use("/stock/detalleDeStock", detalleDeStock)
 app.use("/sucursales", sucursales)
-app.use("/detalleDeStock", detalleDeStock)
 
 app.use((req, res, next) => {
     const error = new BackEndError("Ruta no encontrada", 404)

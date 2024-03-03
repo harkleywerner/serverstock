@@ -8,7 +8,6 @@ const trassaciones_controller = {
 
         try {
             const transsacion = await trassaciones_model.addTranssacion(req,next)
-
             res.status(200).json({ tipo: "success", data: transsacion })
 
         } catch (error) {
