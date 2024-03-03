@@ -1,16 +1,17 @@
 import express from "express"
 import configServer from "./src/config/server.js"
-import cors from "cors"
-import usuarios from "./src/router/usuarios.router.js"
 import errorGlobalMiddleware from "./src/middlewares/errorGlobal.middleware.js"
-import productos from "./src/router/productos.router.js"
-import sucursales from "./src/router/sucursales.router.js"
-import stock from "./src/router/stock.router.js"
-import trassaciones from "./src/router/trassaciones.router.js"
-import { BackEndError } from "./src/utils/errors.utils.js"
 import rateLimitGloalMiddleware from "./src/middlewares/rateLimitGlobal.middleware.js"
 import detalleDeStock from "./src/router/detalleDeStock.router.js"
-import session from "express-session"
+import productos from "./src/router/productos.router.js"
+import stock from "./src/router/stock.router.js"
+import sucursales from "./src/router/sucursales.router.js"
+import trassaciones from "./src/router/trassaciones.router.js"
+import usuarios from "./src/router/usuarios.router.js"
+import { BackEndError } from "./src/utils/errors.utils.js"
+import corsConfigMiddleware from "./src/middlewares/corsConfig.middleware.js"
+import sucursalSessionMiddleware from "./src/middlewares/sucursalSession.middleware.js.js"
+import usuarioSessionMiddleware from "./src/middlewares/usuarioSession.middleware.js"
 
 configServer()
 
@@ -20,22 +21,10 @@ const limiter = rateLimitGloalMiddleware()
 
 
 app.use(express.json())
-app.use(cors({
-    origin: 'http://localhost:5173',
-    credentials: true
-}));
 
-
-app.use(session({
-    secret: 'stock-1bsf-456g-aff',
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-        // secure : true,//Si establezco esto como true quiere decir que solo acepta solicuted HTTPS
-        httpOnly: false,
-        maxAge: 1500000
-    },
-}))
+app.use(corsConfigMiddleware());
+app.use(sucursalSessionMiddleware())
+app.use(usuarioSessionMiddleware())
 
 app.get("/", (req, res) => {
     res.status(301).redirect("/sucursales")

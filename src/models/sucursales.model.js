@@ -16,11 +16,9 @@ const sucursales_model = {
 
     logginSucursal: async (req) => {
 
-        const id_sucursal = req.body.id_usuario
+        const {contraseña,id_sucursal} = req.body
 
-        const contraseña = req.body.contraseña
-
-        const select = `SELECT * FROM sucursales WHERE id_sucursal = ? AND contraseña = ? `
+        const select = `SELECT 1 FROM sucursales WHERE id_sucursal = ? AND contraseña = ? `
 
         const connection = await pool
 

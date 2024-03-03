@@ -17,10 +17,11 @@ const sucursales_controler = {
         try {
             const logeo = await sucursales_model.logginSucursal(req)
 
-            if (logeo.affectedRows == 1) {
-                res.status(200).json({ message: "success" })
+            if (logeo.length == 1) {
+                req.session.id_sucursal =  req.body.id_sucursal
+                res.status(200).json({tipo : "success"})
             } else {
-                res.status(204).json({ message: "denied" })
+                res.status(200).json({ tipo: "denied" })
             }
         } catch (error) {
             next(error)
