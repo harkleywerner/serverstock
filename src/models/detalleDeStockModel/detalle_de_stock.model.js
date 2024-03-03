@@ -37,12 +37,12 @@ const detalle_de_stock_model = {
         let select = `
         SELECT
         -COALESCE(SUM(t.cantidad), 0) AS devoluciones_permitidas,
-        s.cantidad - COALESCE(SUM(t.cantidad), 0) AS cantidad_total
+         MAX( s.cantidad) - COALESCE(SUM(t.cantidad), 0) AS cantidad_total
         FROM detalle_de_stock s
         LEFT JOIN transsaciones t ON
          t.id_producto = s.id_producto AND t.id_stock = s.id_stock
-        WHERE s.id_stock = ? AND s.id_producto = ?
-        GROUP BY s.cantidad;
+        WHERE  s.id_stock = ? AND s.id_producto = ?
+        GROUP BY s.id_stock;
           `
 
         const [results] = await connection.query(select, [id_stock, id_producto])
