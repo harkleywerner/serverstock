@@ -149,7 +149,7 @@ const stock_model = {
         const failed_commit = {
             f_post: [],
             f_patch: {},
-            f_delete: []
+            f_delete: {}
         }
 
         const success_commit = {

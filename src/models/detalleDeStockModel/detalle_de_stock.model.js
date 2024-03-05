@@ -63,7 +63,9 @@ const detalle_de_stock_model = {
             const { cantidad_minima, verificarCantidadTranssaciones } = await validation.validationUpdateDetalleDeStock({ cantidad, connection, id_producto, id_stock })
 
             if (verificarCantidadTranssaciones) {
-                f_patch[id_producto] = { cantidad: cantidad_minima }
+
+                f_patch[id_producto] = { cantidad_minima }
+                
             } else {
 
                 await connection.query(update, [Math.abs(cantidad), id_detalle_de_stock])
@@ -94,24 +96,26 @@ const detalle_de_stock_model = {
 
     },
 
-    removeDetalleDeStock: async ({ connection, productos_delete = [], s_delete = [], f_delete = [], id_stock }) => {
+    removeDetalleDeStock: async ({ connection, productos_delete = [], s_delete = [], f_delete = {}, id_stock }) => {
 
         const deletDetalles = "DELETE FROM  detalle_de_stock WHERE id_detalle_de_stock = ?";
 
 
         for (const producto of productos_delete) {
 
-            const { id_detalle_de_stock, id_producto, cantidad } = producto;
+            const { id_detalle_de_stock, id_producto } = producto;
 
+            const {
+                cantidad_transsaciones,
+                verificarBorrado
+            } = await validation.validationRemoveDetalleDeStock({ id_producto, connection, id_stock })
 
-
-            const res = await validation.validationRemoveDetalleDeStock({ id_producto, cantidad, connection, id_stock })
-
-            if (res) {
-                f_delete.push(id_producto)
-            } else {
+            if (verificarBorrado) {
                 s_delete.push(id_producto)
                 await connection.query(deletDetalles, [id_detalle_de_stock]);
+            } else {
+                f_delete[id_producto] = { cantidad_transsaciones }
+
             }
         }
 
