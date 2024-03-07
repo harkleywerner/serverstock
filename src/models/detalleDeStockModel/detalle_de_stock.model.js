@@ -60,17 +60,19 @@ const detalle_de_stock_model = {
 
             const { cantidad, id_detalle_de_stock, id_producto } = producto
 
-            const { cantidad_minima, verificarCantidadTranssaciones } = await validation.validationUpdateDetalleDeStock({ cantidad, connection, id_producto, id_stock })
+            const cantidadPositiva = Math.abs(cantidad)
+
+            const { cantidad_sincronizacion, verificarCantidadTranssaciones } = await validation.validationUpdateDetalleDeStock({ cantidad: cantidadPositiva, connection, id_producto, id_stock })
 
             if (verificarCantidadTranssaciones) {
+                f_patch[id_producto] = { cantidad_sincronizacion }
 
-                f_patch[id_producto] = { cantidad_minima }
-                
             } else {
 
-                await connection.query(update, [Math.abs(cantidad), id_detalle_de_stock])
+                const [{ affectedRows }] = await connection.query(update, [cantidadPositiva, id_detalle_de_stock])
 
-                s_patch[id_producto] = { cantidad }
+                s_patch[id_producto] = { cantidad: affectedRows == 0 ? -999 : cantidadPositiva }
+
             }
         }
 
@@ -89,7 +91,7 @@ const detalle_de_stock_model = {
             if (resValidation) {
                 f_post.push(id_producto)
             } else {
-                const [res] = await connection.query(insert, [cantidad, id_producto, id_stock]);
+                const [res] = await connection.query(insert, [Math.abs(cantidad), id_producto, id_stock]);
                 s_post[id_producto] = { id_detalle_de_stock: res.insertId, id_producto }
             }
         }
@@ -106,7 +108,7 @@ const detalle_de_stock_model = {
             const { id_detalle_de_stock, id_producto } = producto;
 
             const {
-                cantidad_transsaciones,
+                cantidad_sincronizacion,
                 verificarBorrado
             } = await validation.validationRemoveDetalleDeStock({ id_producto, connection, id_stock })
 
@@ -114,7 +116,7 @@ const detalle_de_stock_model = {
                 s_delete.push(id_producto)
                 await connection.query(deletDetalles, [id_detalle_de_stock]);
             } else {
-                f_delete[id_producto] = { cantidad_transsaciones }
+                f_delete[id_producto] = { cantidad_sincronizacion }
 
             }
         }

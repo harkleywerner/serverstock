@@ -4,12 +4,13 @@ const detalle_de_stock_model_validaciones = {
   validationRemoveDetalleDeStock: async ({ id_producto, connection, id_stock }) => {
 
     const select = `
-    SELECT SUM(cantidad) as cantidad_transsacion 
+    SELECT COALESCE(SUM(cantidad),0) as cantidad_transsaciones 
     FROM transsaciones
     WHERE id_stock = ? AND id_producto = ?
             `
 
     const [res] = await connection.query(select, [id_stock, id_producto])
+
 
     const { cantidad_transsaciones } = res[0] || {}
 
@@ -17,7 +18,7 @@ const detalle_de_stock_model_validaciones = {
 
     return {
       verificarBorrado,
-      cantidad_transsaciones
+      cantidad_sincronizacion : cantidad_transsaciones
 
     }
   },
@@ -37,7 +38,7 @@ const detalle_de_stock_model_validaciones = {
   validationUpdateDetalleDeStock: async ({ connection, id_producto, id_stock, cantidad }) => {
 
     const select = `
-    SELECT SUM(cantidad) as cantidad_transsacion 
+    SELECT COALESCE(SUM(cantidad),0) as cantidad_transsacion 
     FROM transsaciones
     WHERE id_stock = ? AND id_producto = ?
           `
@@ -48,7 +49,7 @@ const detalle_de_stock_model_validaciones = {
 
     const verificarCantidadTranssaciones = cantidadTranssacion > cantidad
 
-    return { verificarCantidadTranssaciones, cantidad_minima: cantidadTranssacion }
+    return { verificarCantidadTranssaciones, cantidad_sincronizacion: parseInt(cantidadTranssacion) + 1 }
 
   }
 

@@ -11,7 +11,6 @@ import usuarios from "./src/router/usuarios.router.js"
 import { BackEndError } from "./src/utils/errors.utils.js"
 import corsConfigMiddleware from "./src/middlewares/corsConfig.middleware.js"
 import sucursalSessionMiddleware from "./src/middlewares/sucursalSession.middleware.js.js"
-import usuarioSessionMiddleware from "./src/middlewares/usuarioSession.middleware.js"
 import { validationSucursalSessionMiddleware } from "./src/middlewares/validationSucursalSession.middleware.js"
 
 configServer()
@@ -25,20 +24,35 @@ app.use(express.json())
 
 app.use(corsConfigMiddleware());
 app.use(sucursalSessionMiddleware())
-app.use(usuarioSessionMiddleware())
+
+/* 
+INSTALAR HELMENT PARA CSP
+*/
 
 app.get("/", (req, res) => {
     res.status(301).redirect("/sucursales")
 })
 
 
+
 app.use("/", limiter)
 app.use("/stock", validationSucursalSessionMiddleware, stock)
+app.use("/sucursales", sucursales)
 app.use("/stock/usuarios", usuarios)
 app.use("/stock/trassaciones", trassaciones)
 app.use("/stock/productos", productos)
 app.use("/stock/detalleDeStock", detalleDeStock)
-app.use("/sucursales", sucursales)
+app.get("/session", (req, res, next) => {
+    const { sucursal_info, usuario_info } = req.session
+
+    const data = {
+        sucursal_info,
+        usuario_info
+    }
+
+    res.status(200).json({ tipo: "success", data })
+
+})
 
 app.use((req, res, next) => {
     const error = new BackEndError("Ruta no encontrada", 404)

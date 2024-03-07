@@ -138,6 +138,8 @@ const stock_model = {
 
     updateStock: async (req, next) => {
 
+        //=>Nota imporante las cantidad se trabajan en positivo, por mas el front envie negativas por error/vulnerabilidades siempre seran negativas en las consultas.
+
         const { id_stock, lista_de_cambios } = req.body
 
         const { patch, post, delete: remove } = lista_de_cambios

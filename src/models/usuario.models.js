@@ -2,12 +2,17 @@ import pool from "../config/database.js"
 
 const usuarios_model = {
 
-        getUsuarios: async () => {
-                const select = `SELECT * FROM usuarios WHERE estado = "activo"`
+        getUsuarios: async (req) => {
+
+                const { sucursal_info = {} } = req.session
+
+                const { id_sucursal } = sucursal_info
+
+                const select = `SELECT * FROM usuarios WHERE estado = "activo" AND  id_sucursal = ?`
 
                 const connection = await pool
 
-                const [results] = await connection.query(select)
+                const [results] = await connection.query(select, [id_sucursal])
 
                 return results
 
@@ -15,15 +20,17 @@ const usuarios_model = {
 
         logginUsuario: async (req) => {
 
-                const id_usuario = req.body.id_usuario
+                const { id_usuario, contraseña } = req.body
 
-                const contraseña = req.body.contraseña
+                const { sucursal_info = {} } = req.session
 
-                const select = `SELECT * FROM usuarios WHERE id_usuario = ? AND contraseña = ? `
+                const { id_sucursal } = sucursal_info
+
+                const select = `SELECT * FROM usuarios WHERE id_usuario = ? AND contraseña = ? AND id_sucursal = ? `
 
                 const connection = await pool
 
-                const [results] = await connection.query(select, [id_usuario, contraseña])
+                const [results] = await connection.query(select, [id_usuario, contraseña, id_sucursal])
 
                 return results
         },

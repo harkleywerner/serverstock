@@ -18,7 +18,7 @@ const sucursales_model = {
 
         const {contraseña,id_sucursal} = req.body
 
-        const select = `SELECT 1 FROM sucursales WHERE id_sucursal = ? AND contraseña = ? `
+        const select = `SELECT nombre,id_sucursal FROM sucursales WHERE id_sucursal = ? AND contraseña = ? `
 
         const connection = await pool
 

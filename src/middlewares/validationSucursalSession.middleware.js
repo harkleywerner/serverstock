@@ -1,8 +1,8 @@
 export const validationSucursalSessionMiddleware = (req, res, next) => {
     //=> Este middleware sirve para todas las rutas cuya raiz empieza con stock.
-    const { id_sucursal } = req.session
+    const { sucursal_info = {} } = req.session
 
-    if (id_sucursal) {
+    if (sucursal_info.id_sucursal) {
         next()
     } else {
         res.status(401).json(
@@ -13,5 +13,4 @@ export const validationSucursalSessionMiddleware = (req, res, next) => {
             }
         )
     }
-
 };

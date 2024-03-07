@@ -18,14 +18,14 @@ const trassaciones_model = {
 
             let restante = Math.abs(cantidad)
 
-            while (restante > 0) {
+            while (restante > 0 ) {
 
                 const {
                     total_stock,
                     devoluciones_permitidas,
                     id_stock_actual,
                     verificacionLength
-                } = await validations.validationAddStock({ connection, id_producto, verificarCantidad, id_stock })
+                } = await validations.validationAddStock({ connection, id_producto, cantidad, id_stock })
 
                 if (verificacionLength) {
                     const insert = "INSERT INTO transsaciones (cantidad,id_producto,id_sucursal,id_usuario,id_stock) VALUES(?,?,?,?,?)"
