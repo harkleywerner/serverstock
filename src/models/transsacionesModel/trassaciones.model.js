@@ -18,7 +18,9 @@ const trassaciones_model = {
 
             let restante = Math.abs(cantidad)
 
-            while (restante > 0 ) {
+            let sobrante = 0
+
+            while (restante > 0) {
 
                 const {
                     total_stock,
@@ -40,16 +42,17 @@ const trassaciones_model = {
 
                     restante -= Math.abs(verificacion)
                 } else {
+                    sobrante = restante
                     restante = 0
                 }
             }
 
             await connection.commit()
 
-            return {
-                tipo: "success",
-                data: { cantidad: Math.abs(cantidad) - restante }, //Arreglar esto de los mensajes
-            }
+            const resultadoFinal = Math.abs(cantidad) - sobrante
+
+            return { cantidad: Math.sign(cantidad) == 1 ? -resultadoFinal : resultadoFinal } //Se devuelve el signo contrario del que llego
+
 
 
         } catch (error) {

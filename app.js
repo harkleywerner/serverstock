@@ -33,8 +33,6 @@ app.get("/", (req, res) => {
     res.status(301).redirect("/sucursales")
 })
 
-
-
 app.use("/", limiter)
 app.use("/stock", validationSucursalSessionMiddleware, stock)
 app.use("/sucursales", sucursales)
@@ -42,6 +40,7 @@ app.use("/stock/usuarios", usuarios)
 app.use("/stock/trassaciones", trassaciones)
 app.use("/stock/productos", productos)
 app.use("/stock/detalleDeStock", detalleDeStock)
+
 app.get("/session", (req, res, next) => {
     const { sucursal_info, usuario_info } = req.session
 

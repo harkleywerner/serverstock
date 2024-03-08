@@ -9,8 +9,7 @@ const errorGlobalMiddleware = (err, req, res, next) => { //Este enfoque capta to
         .json(
             {
                 message: err.message,
-                code: codigo,
-                name: err.name,
+                tipo: "failed",
             }
         );
 }

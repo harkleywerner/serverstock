@@ -23,6 +23,8 @@ const stock_controller = {
 
     patchStockGestion: async (req, res, next) => {
 
+
+     
         try {
             const data = await stock_model.updateStock(req, next)
             res.status(200).json({ tipo: "success", data })
@@ -35,7 +37,7 @@ const stock_controller = {
     postStock: async (req, res, next) => {
         try {
             const results = await stock_model.getStockByIdProducto(req)
-            res.status(200).json({tipo : "success",data : results})
+            res.status(200).json({ tipo: "success", data: results })
         } catch (error) {
             next(error)
         }
