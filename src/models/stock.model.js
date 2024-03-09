@@ -51,7 +51,7 @@ const stock_model = {
     },
 
     getAllStocks: async (req) => {
-        
+
         let select = `
         SELECT k.id_stock,
         k.lote,
@@ -79,12 +79,12 @@ const stock_model = {
         const [params, selectRestante] = concatenarClausulasUtils({ clausulas, lista: { ...req.query, offset: parseInt(req.query.offset ?? 0) } })
 
         select += selectRestante
-   
+
         const connection = await pool
-      
+
         const [results] = await connection.query(select, [...params])
 
-      
+
         return results
     },
 
@@ -138,7 +138,8 @@ const stock_model = {
 
     updateStock: async (req, next) => {
 
-        //=>Nota imporante las cantidad se trabajan en positivo, por mas el front envie negativas por error/vulnerabilidades siempre seran negativas en las consultas.
+        //=>Nota importante las cantidad que llegue se trabajan en positivo,
+        // por mas el front envie negativas por error/vulnerabilidades siempre seran positivas en las consultas.
 
         const { id_stock, lista_de_cambios } = req.body
 
@@ -147,21 +148,7 @@ const stock_model = {
 
         const update = "UPDATE stock SET ultima_edicion = NOW() WHERE id_stock = ?"
 
-
-        const failed_commit = {
-            f_post: [],
-            f_patch: {},
-            f_delete: {}
-        }
-
-        const success_commit = {
-            s_post: {},
-            s_patch: {},
-            s_delete: []
-        }
-
-        const { s_delete, s_patch, s_post } = success_commit
-        const { f_delete, f_patch, f_post } = failed_commit
+        const resumen = {}
 
         let connection;
 
@@ -171,23 +158,22 @@ const stock_model = {
             await connection.beginTransaction()
 
             await detalle_de_stock_model.
-                addDetalleDeStock({ connection, id_stock, f_post, s_post, pruductos_post: post })
+                addDetalleDeStock({ connection, id_stock, resumen, pruductos_post: post })
 
             await detalle_de_stock_model.
-                removeDetalleDeStock({ connection, s_delete, f_delete, productos_delete: remove, id_stock })
+                removeDetalleDeStock({ connection, resumen, productos_delete: remove, id_stock })
 
             await detalle_de_stock_model.
-                updateDetalleDeStock({ connection, pruductos_patch: patch, id_stock, f_patch, s_patch })
+                updateDetalleDeStock({ connection, pruductos_patch: patch, id_stock, resumen })
 
 
-            if (Object.keys(success_commit).length > 0) {
+            if (Object.keys(resumen).length > 0) {
                 await connection.query(update, [id_stock])
             }
             await connection.commit()
 
             return {
-                success_commit,
-                failed_commit
+                resumen
             }
         } catch (error) {
             next(error)

@@ -18,20 +18,24 @@ const detalle_de_stock_model_validaciones = {
 
     return {
       verificarBorrado,
-      cantidad_sincronizacion : cantidad_transsaciones
+      cantidad_sincronizacion: cantidad_transsaciones
 
     }
   },
 
   validationAddDetalleDeStock: async ({ connection, id_stock, id_producto }) => {
 
-    const select = "SELECT 1 FROM detalle_de_stock WHERE id_producto = ? AND id_stock = ?"
+    const select = "SELECT id_detalle_de_stock FROM detalle_de_stock WHERE id_producto = ? AND id_stock = ?"
 
     const [res] = await connection.query(select, [id_producto, id_stock])
 
     const verificarProductoEnStock = res.length > 0
+    const id_detalle_de_stock = res[0]?.id_detalle_de_stock
 
-    return verificarProductoEnStock
+    return {
+      verificarProductoEnStock,
+      id_detalle_de_stock
+    }
 
   },
 

@@ -51,7 +51,7 @@ const detalle_de_stock_model = {
     },
 
 
-    updateDetalleDeStock: async ({ id_stock, pruductos_patch = [], connection, f_patch = {}, s_patch = {} }) => {
+    updateDetalleDeStock: async ({ id_stock, pruductos_patch = [], connection, resumen }) => {
 
         const update = "UPDATE detalle_de_stock SET cantidad = ?, ultima_edicion = NOW() WHERE id_detalle_de_stock = ?  "
 
@@ -62,23 +62,27 @@ const detalle_de_stock_model = {
 
             const cantidadPositiva = Math.abs(cantidad)
 
-            const { cantidad_sincronizacion, verificarCantidadTranssaciones } = await validation.validationUpdateDetalleDeStock({ cantidad: cantidadPositiva, connection, id_producto, id_stock })
+            const { cantidad_sincronizacion, verificarCantidadTranssaciones } =
+                await validation.validationUpdateDetalleDeStock({ cantidad: cantidadPositiva, connection, id_producto, id_stock })
 
             if (verificarCantidadTranssaciones) {
-                f_patch[id_producto] = { cantidad_sincronizacion }
-
+                resumen[id_producto] = { cantidad_sincronizacion, sincronizacion: "failed_patch" }
             } else {
 
                 const [{ affectedRows }] = await connection.query(update, [cantidadPositiva, id_detalle_de_stock])
 
-                s_patch[id_producto] = { cantidad: affectedRows == 0 ? -999 : cantidadPositiva }
+                if (affectedRows == 0) {
+                    resumen[id_producto] = { sincronizacion: "info_patch" }
+                } else {
+                    resumen[id_producto] = { cantidad: cantidadPositiva, sincronizacion: "success_patch" }
+                }
 
             }
         }
 
     },
 
-    addDetalleDeStock: async ({ connection, pruductos_post = [], id_stock, f_post = [], s_post = {} }) => {
+    addDetalleDeStock: async ({ connection, pruductos_post = [], id_stock, resumen }) => {
 
         const insert = "INSERT INTO detalle_de_stock (cantidad,id_producto,id_stock) VALUES(?,?,?)";
 
@@ -86,19 +90,22 @@ const detalle_de_stock_model = {
 
             const { id_producto, cantidad } = producto;
 
-            const resValidation = await validation.validationAddDetalleDeStock({ connection, id_producto, id_stock })
+            const {
+                verificarProductoEnStock,
+                id_detalle_de_stock
+            } = await validation.validationAddDetalleDeStock({ connection, id_producto, id_stock })
 
-            if (resValidation) {
-                f_post.push(id_producto)
+            if (verificarProductoEnStock) {
+                resumen[id_producto] = { sincronizacion: "info_post", id_detalle_de_stock }
             } else {
                 const [res] = await connection.query(insert, [Math.abs(cantidad), id_producto, id_stock]);
-                s_post[id_producto] = { id_detalle_de_stock: res.insertId, id_producto }
+                resumen[id_producto] = { id_detalle_de_stock: res.insertId, sincronizacion: "success_post" }
             }
         }
 
     },
 
-    removeDetalleDeStock: async ({ connection, productos_delete = [], s_delete = [], f_delete = {}, id_stock }) => {
+    removeDetalleDeStock: async ({ connection, productos_delete = [], resumen, id_stock }) => {
 
         const deletDetalles = "DELETE FROM  detalle_de_stock WHERE id_detalle_de_stock = ?";
 
@@ -113,10 +120,15 @@ const detalle_de_stock_model = {
             } = await validation.validationRemoveDetalleDeStock({ id_producto, connection, id_stock })
 
             if (verificarBorrado) {
-                s_delete.push(id_producto)
-                await connection.query(deletDetalles, [id_detalle_de_stock]);
+                const [{ affectedRows }] = await connection.query(deletDetalles, [id_detalle_de_stock]);
+                if (affectedRows == 0) {
+                    resumen[id_producto] = { sincronizacion: "info_delete" }
+                } else {
+                    resumen[id_producto] = { sincronizacion: "success_delete" }
+                }
+
             } else {
-                f_delete[id_producto] = { cantidad_sincronizacion }
+                resumen[id_producto] = { cantidad_sincronizacion, sincronizacion: "failed_delete" }
 
             }
         }
