@@ -12,6 +12,15 @@ const trassaciones_controller = {
         }
     },
 
+    getTranssacion: async (req, res, next) => {
+        try {
+            const transsacion = await trassaciones_model.getTranssacionByIdStock(req, next)
+          
+            res.status(200).json({ tipo: "success", data: {...transsacion[0]} })
+        } catch (error) {
+            next(error)
+        }
+    }
 
 }
 

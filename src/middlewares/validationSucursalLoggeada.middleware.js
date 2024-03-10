@@ -1,11 +1,10 @@
-export const validationSucursalSessionMiddleware = (req, res, next) => {
+export const validationSucursalLoggeadaMiddleware = (req,res,next) => {
 
     const { sucursal_info = {} } = req.session
 
-    const { id_sucursal } = sucursal_info
+    const { loggeado } = sucursal_info
 
-
-    if (id_sucursal) {
+    if (loggeado) {
         next()
     } else {
         res.status(401).json(

@@ -6,12 +6,14 @@ import detalleDeStock from "./src/router/detalleDeStock.router.js"
 import productos from "./src/router/productos.router.js"
 import stock from "./src/router/stock.router.js"
 import sucursales from "./src/router/sucursales.router.js"
-import trassaciones from "./src/router/trassaciones.router.js"
+import transsaciones from "./src/router/transsaciones.router.js"
 import usuarios from "./src/router/usuarios.router.js"
 import { BackEndError } from "./src/utils/errors.utils.js"
 import corsConfigMiddleware from "./src/middlewares/corsConfig.middleware.js"
 import sucursalSessionMiddleware from "./src/middlewares/sucursalSession.middleware.js.js"
 import { validationSucursalSessionMiddleware } from "./src/middlewares/validationSucursalSession.middleware.js"
+import { validationSucursalLoggeadaMiddleware } from "./src/middlewares/validationSucursalLoggeada.middleware.js"
+import { validationUsuarioSessionMiddleware } from "./src/middlewares/validationUsuarioSession.middleware.js"
 
 configServer()
 
@@ -33,15 +35,17 @@ app.get("/", (req, res) => {
     res.status(301).redirect("/sucursales")
 })
 
+
+
 app.use("/", limiter)
-app.use("/stock", validationSucursalSessionMiddleware, stock)
 app.use("/sucursales", sucursales)
-app.use("/stock/usuarios", usuarios)
-app.use("/stock/trassaciones", trassaciones)
+app.use("/stock", validationSucursalSessionMiddleware, stock)
+app.use("/stock/usuarios", validationSucursalLoggeadaMiddleware, usuarios)
+app.use("/stock/transsaciones", validationUsuarioSessionMiddleware, transsaciones)
 app.use("/stock/productos", productos)
 app.use("/stock/detalleDeStock", detalleDeStock)
 
-app.get("/session",  (req, res, next) => {
+app.get("/session", (req, res, next) => {
 
     const { sucursal_info, usuario_info } = req.session
 

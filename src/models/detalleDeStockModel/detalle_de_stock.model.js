@@ -28,28 +28,6 @@ const detalle_de_stock_model = {
         return results
     },
 
-    getDetalleDeStockByIdProducto: async (req) => {
-
-
-        const connection = await pool
-
-        const { id_producto, id_stock } = req.body
-
-        let select = `
-        SELECT
-        CONVERT(-COALESCE(SUM(t.cantidad), 0),signed) AS devoluciones_permitidas,
-        CONVERT( MAX( s.cantidad) - COALESCE(SUM(t.cantidad), 0),signed) AS cantidad_total
-        FROM detalle_de_stock s
-        LEFT JOIN transsaciones t ON
-         t.id_producto = s.id_producto AND t.id_stock = s.id_stock
-        WHERE  s.id_stock = ? AND s.id_producto = ?
-        GROUP BY s.id_stock;
-          `
-
-        const [results] = await connection.query(select, [id_stock, id_producto])
-        return results
-    },
-
 
     updateDetalleDeStock: async ({ id_stock, pruductos_patch = [], connection, resumen }) => {
 
