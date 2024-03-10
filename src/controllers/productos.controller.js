@@ -6,7 +6,7 @@ const productos_controller = {
 
     getAllProductos: async (req, res, next) => {
         try {
-            const listaDeProductos = await productos_model.getAllProductos(req) 
+            const listaDeProductos = await productos_model.getAllProductos(req)
             res.status(200).json({ tipo: "success", data: listaDeProductos })
         } catch (error) {
             next(error)

@@ -30,14 +30,15 @@ const detalle_de_stock_model = {
 
     getDetalleDeStockByIdProducto: async (req) => {
 
+
         const connection = await pool
 
         const { id_producto, id_stock } = req.body
 
         let select = `
         SELECT
-        -COALESCE(SUM(t.cantidad), 0) AS devoluciones_permitidas,
-         MAX( s.cantidad) - COALESCE(SUM(t.cantidad), 0) AS cantidad_total
+        CONVERT(-COALESCE(SUM(t.cantidad), 0),signed) AS devoluciones_permitidas,
+        CONVERT( MAX( s.cantidad) - COALESCE(SUM(t.cantidad), 0),signed) AS cantidad_total
         FROM detalle_de_stock s
         LEFT JOIN transsaciones t ON
          t.id_producto = s.id_producto AND t.id_stock = s.id_stock
@@ -46,7 +47,6 @@ const detalle_de_stock_model = {
           `
 
         const [results] = await connection.query(select, [id_stock, id_producto])
-
         return results
     },
 

@@ -98,13 +98,7 @@ const stock_model = {
 
         let connection;
 
-        const failed_commit = { "f_post": [] }
-
-        const success_commit = { "s_post": {} }
-
-        const { f_post } = failed_commit
-
-        const { s_post } = success_commit
+        const resumen = {}
 
         try {
             connection = await pool.getConnection();
@@ -115,15 +109,14 @@ const stock_model = {
 
             const [{ insertId }] = await connection.query(insert, [usuarios_id, id_sucursal, lote]);
 
-            await detalle_de_stock_model.addDetalleDeStock({ id_stock: insertId, connection, pruductos_post: listaDeNuevoStock, f_post, s_post })
+            await detalle_de_stock_model.addDetalleDeStock({ id_stock: insertId, connection, pruductos_post: listaDeNuevoStock, resumen })
 
             await connection.commit()
 
             return {
                 lote,
                 id_stock: insertId,
-                failed_commit,
-                success_commit
+                resumen
             }
 
         } catch (error) {

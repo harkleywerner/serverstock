@@ -41,7 +41,8 @@ app.use("/stock/trassaciones", trassaciones)
 app.use("/stock/productos", productos)
 app.use("/stock/detalleDeStock", detalleDeStock)
 
-app.get("/session", (req, res, next) => {
+app.get("/session",  (req, res, next) => {
+
     const { sucursal_info, usuario_info } = req.session
 
     const data = {

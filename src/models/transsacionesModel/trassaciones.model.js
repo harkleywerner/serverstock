@@ -3,11 +3,13 @@ import validations from "./transsaciones_model.validations.js"
 
 const trassaciones_model = {
 
-    addTranssacion: async (req, next) => { //Modularizar logica
+    addTranssacion: async (req, next) => {
 
         const { cantidad, id_producto, id_stock } = req.body
 
         const verificarCantidad = Math.sign(cantidad) == -1
+
+        const cantidadPositiva = Math.abs(cantidad)
 
         let connection;
 
@@ -16,9 +18,7 @@ const trassaciones_model = {
 
             await connection.beginTransaction()
 
-            let restante = Math.abs(cantidad)
-
-            let sobrante = 0
+            let restante = cantidadPositiva
 
             while (restante > 0) {
 
@@ -42,16 +42,13 @@ const trassaciones_model = {
 
                     restante -= Math.abs(verificacion)
                 } else {
-                    sobrante = restante
                     restante = 0
                 }
             }
 
             await connection.commit()
 
-            const resultadoFinal = Math.abs(cantidad) - sobrante
-
-            return { cantidad: Math.sign(cantidad) == 1 ? -resultadoFinal : resultadoFinal } //Se devuelve el signo contrario del que llego
+            return { cantidad: verificarCantidad ? cantidadPositiva : -cantidadPositiva } //Se devuelve el signo contrario del que llego
 
 
 

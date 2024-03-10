@@ -8,8 +8,8 @@ const productos_model = {
         let select = `SELECT
         p.id_producto,
         p.nombre,
-        COALESCE(SUM(d.cantidad),0) - COALESCE(t.cantidad,0) as cantidad_total,
-        -COALESCE(t.cantidad,0) AS devoluciones_permitidas
+        CONVERT(COALESCE(SUM(d.cantidad), 0) - COALESCE(t.cantidad, 0),signed) AS cantidad_total,
+        CONVERT(-COALESCE(t.cantidad, 0),signed) AS devoluciones_permitidas
         FROM productos p
         LEFT JOIN detalle_de_stock d ON d.id_producto = p.id_producto
         LEFT JOIN (
