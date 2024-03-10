@@ -5,6 +5,11 @@ const productos_model = {
 
     getAllProductos: async (req) => {
 
+
+        const { sucursal_info = {} } = req.session
+
+        const { id_sucursal } = sucursal_info
+
         let select = `SELECT
         p.id_producto,
         p.nombre,
@@ -12,11 +17,12 @@ const productos_model = {
         CONVERT(-COALESCE(t.cantidad, 0),signed) AS devoluciones_permitidas
         FROM productos p
         LEFT JOIN detalle_de_stock d ON d.id_producto = p.id_producto
+		INNER JOIN stock st ON st.id_stock = d.id_stock
         LEFT JOIN (
-        SELECT SUM(cantidad) as cantidad,id_producto FROM transsaciones
-        GROUP BY id_producto
-        ) t ON t.id_producto = d.id_producto
-        WHERE p.estado = "activo"
+        SELECT SUM(cantidad) as cantidad,id_producto,id_sucursal FROM transsaciones
+        GROUP BY id_producto,id_sucursal
+        ) t ON t.id_producto = d.id_producto AND st.id_sucursal = t.id_sucursal
+        WHERE p.estado = "activo" AND st.id_sucursal = ?
         `
         const clausulas = {
             search: "AND nombre LIKE CONCAT( ?, '%')",
@@ -32,7 +38,7 @@ const productos_model = {
 
         const connection = await pool
 
-        const [results] = await connection.query(select, params)
+        const [results] = await connection.query(select, [id_sucursal,...params])
 
         return results
     },

@@ -6,6 +6,10 @@ const detalle_de_stock_model = {
 
     getDetallesDeStock: async (req) => {
 
+        const { sucursal_info = {} } = req.session
+        
+        const { id_sucursal } = sucursal_info
+
         const { id_stock } = req.query
 
         let select = `
@@ -15,15 +19,16 @@ const detalle_de_stock_model = {
         p.nombre as nombre,
         p.id_producto,
         c.nombre as categoria
-        FROM detalle_de_stock  s INNER JOIN
-        productos p  ON s.id_producto = p.id_producto
+        FROM stock st
+        INNER JOIN detalle_de_stock s ON s.id_stock = st.id_stock
+        INNER JOIN productos p  ON s.id_producto = p.id_producto
         INNER JOIN categorias c ON c.id_categoria = p.id_categoria
-        WHERE s.id_stock = ?
+        WHERE s.id_stock = ? and st.id_sucursal = ?
         `
 
         const connection = await pool
 
-        const [results] = await connection.query(select, [id_stock])
+        const [results] = await connection.query(select, [id_stock, id_sucursal])
 
         return results
     },

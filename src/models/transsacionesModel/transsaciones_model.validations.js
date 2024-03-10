@@ -2,6 +2,10 @@ const detalle_de_stock_model_validaciones = {
 
     validationAddStock: async ({ cantidad, connection, id_producto, id_stock }) => {
 
+        const { sucursal_info = {}, usuario_info = {} } = req.session
+        const { id_sucursal } = sucursal_info
+        const { id_usuario } = usuario_info
+
         let select =
             `
             SELECT 

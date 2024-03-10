@@ -5,6 +5,10 @@ const trassaciones_model = {
 
     addTranssacion: async (req, next) => {
 
+        const { sucursal_info = {}, usuario_info = {} } = req.session
+        const { id_sucursal } = sucursal_info
+        const { id_usuario } = usuario_info
+
         const { cantidad, id_producto, id_stock } = req.body
 
         const verificarCantidad = Math.sign(cantidad) == -1
@@ -38,7 +42,7 @@ const trassaciones_model = {
 
                     const verificacion = verificarCantidad ? -trassacionNegativa : transsacionPositiva
 
-                    await connection.query(insert, [verificacion, id_producto, 1, 1, id_stock_actual])
+                    await connection.query(insert, [verificacion, id_producto, id_sucursal, id_usuario, id_stock_actual])
 
                     restante -= Math.abs(verificacion)
                 } else {
@@ -79,7 +83,7 @@ const trassaciones_model = {
           `
 
         const [results] = await connection.query(select, [id_stock, id_producto])
-        
+
         return results
     },
 

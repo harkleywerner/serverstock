@@ -1,4 +1,9 @@
-export const validationUsuarioSessionMiddleware = (req, res, next) => {
+export const validationUsuarioSessionMiddleware = (req, res, next) => { 
+
+    const APP = process.env.APP
+
+    if (APP) return next()
+
 
     const { usuario_info = {} } = req.session
 

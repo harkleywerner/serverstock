@@ -23,7 +23,6 @@ const limiter = rateLimitGloalMiddleware()
 
 
 app.use(express.json())
-
 app.use(corsConfigMiddleware());
 app.use(sucursalSessionMiddleware())
 
@@ -36,11 +35,15 @@ app.get("/", (req, res) => {
 })
 
 
+//Las validaciones pasan por 3 capas.
+//1-Primera se valida si hay una sucursal con session.
+//2-Luego se verifica en usuarios  si hay una sucursal con loggeado en true.
+//3-Finalmente verifica en las rutas restringidas para el usuario si tiene alguna sessesion activa.
 
 app.use("/", limiter)
 app.use("/sucursales", sucursales)
+app.use("/usuarios", validationSucursalLoggeadaMiddleware, usuarios)
 app.use("/stock", validationSucursalSessionMiddleware, stock)
-app.use("/stock/usuarios", validationSucursalLoggeadaMiddleware, usuarios)
 app.use("/stock/transsaciones", validationUsuarioSessionMiddleware, transsaciones)
 app.use("/stock/productos", productos)
 app.use("/stock/detalleDeStock", detalleDeStock)

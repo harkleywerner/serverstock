@@ -90,7 +90,11 @@ const stock_model = {
 
     addStock: async (req, next) => {
 
-        const { usuarios_id = 1, id_sucursal = 1, listaDeNuevoStock } = req.body;
+        const { sucursal_info = {}, usuario_info = {} } = req.session
+        const { id_sucursal } = sucursal_info
+        const { id_usuario } = usuario_info
+
+        const { listaDeNuevoStock } = req.body;
 
         const insert = "INSERT INTO stock (id_usuario,id_sucursal,lote) VALUES (?,?,?)";
 
@@ -105,9 +109,9 @@ const stock_model = {
 
             await connection.beginTransaction();
 
-            const [[{ lote }]] = await connection.query(ultimaStock, [1])
+            const [[{ lote }]] = await connection.query(ultimaStock, [id_sucursal])
 
-            const [{ insertId }] = await connection.query(insert, [usuarios_id, id_sucursal, lote]);
+            const [{ insertId }] = await connection.query(insert, [id_usuario, id_sucursal, lote]);
 
             await detalle_de_stock_model.addDetalleDeStock({ id_stock: insertId, connection, pruductos_post: listaDeNuevoStock, resumen })
 

@@ -1,4 +1,8 @@
-export const validationSucursalLoggeadaMiddleware = (req,res,next) => {
+export const validationSucursalLoggeadaMiddleware = (req, res, next) => {
+
+    const APP = process.env.APP
+
+    if (APP) return next()
 
     const { sucursal_info = {} } = req.session
 
