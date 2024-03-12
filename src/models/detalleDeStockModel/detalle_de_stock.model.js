@@ -7,7 +7,7 @@ const detalle_de_stock_model = {
     getDetallesDeStock: async (req) => {
 
         const { sucursal_info = {} } = req.session
-        
+
         const { id_sucursal } = sucursal_info
 
         const { id_stock } = req.query
@@ -23,7 +23,7 @@ const detalle_de_stock_model = {
         INNER JOIN detalle_de_stock s ON s.id_stock = st.id_stock
         INNER JOIN productos p  ON s.id_producto = p.id_producto
         INNER JOIN categorias c ON c.id_categoria = p.id_categoria
-        WHERE s.id_stock = ? and st.id_sucursal = ?
+        WHERE s.id_stock = ? AND st.id_sucursal = ?
         `
 
         const connection = await pool
@@ -34,9 +34,17 @@ const detalle_de_stock_model = {
     },
 
 
-    updateDetalleDeStock: async ({ id_stock, pruductos_patch = [], connection, resumen }) => {
-
-        const update = "UPDATE detalle_de_stock SET cantidad = ?, ultima_edicion = NOW() WHERE id_detalle_de_stock = ?  "
+    updateDetalleDeStock: async ({ id_stock,pruductos_patch = [], connection, resumen, id_sucursal }) => {
+ 
+        const update = `
+        UPDATE 
+        detalle_de_stock 
+        SET cantidad = ?, ultima_edicion = NOW()
+        WHERE id_detalle_de_stock = ? AND id_stock = (
+        SELECT id_stock FROM stock
+        WHERE id_sucursal = ? AND id_stock = ?
+       )
+        `
 
 
         for (const producto of pruductos_patch) {
@@ -46,13 +54,15 @@ const detalle_de_stock_model = {
             const cantidadPositiva = Math.abs(cantidad)
 
             const { cantidad_sincronizacion, verificarCantidadTranssaciones } =
-                await validation.validationUpdateDetalleDeStock({ cantidad: cantidadPositiva, connection, id_producto, id_stock })
+                await validation.validationUpdateDetalleDeStock({ 
+                    cantidad: cantidadPositiva, connection, id_producto, id_stock,id_sucursal
+                 })
 
             if (verificarCantidadTranssaciones) {
                 resumen[id_producto] = { cantidad_sincronizacion, sincronizacion: "failed_patch" }
             } else {
 
-                const [{ affectedRows }] = await connection.query(update, [cantidadPositiva, id_detalle_de_stock])
+                const [{ affectedRows }] = await connection.query(update, [cantidadPositiva, id_detalle_de_stock, id_sucursal,id_stock])
 
                 if (affectedRows == 0) {
                     resumen[id_producto] = { sincronizacion: "info_patch" }
@@ -65,32 +75,43 @@ const detalle_de_stock_model = {
 
     },
 
-    addDetalleDeStock: async ({ connection, pruductos_post = [], id_stock, resumen }) => {
+    addDetalleDeStock: async ({ connection, pruductos_post = [], id_stock, resumen, id_sucursal }) => {
 
-        const insert = "INSERT INTO detalle_de_stock (cantidad,id_producto,id_stock) VALUES(?,?,?)";
+        
+        const insert = `
+        INSERT INTO detalle_de_stock (cantidad, id_producto, id_stock) 
+        SELECT ?,?,?
+        FROM stock 
+        WHERE id_sucursal = ? AND id_stock = ? 
+        LIMIT 1
+        `
 
         for (const producto of pruductos_post) {
 
             const { id_producto, cantidad } = producto;
-
             const {
                 verificarProductoEnStock,
                 id_detalle_de_stock
-            } = await validation.validationAddDetalleDeStock({ connection, id_producto, id_stock })
+            } = await validation.validationAddDetalleDeStock({ connection, id_producto, id_stock, id_sucursal })
 
             if (verificarProductoEnStock) {
                 resumen[id_producto] = { sincronizacion: "info_post", id_detalle_de_stock }
             } else {
-                const [res] = await connection.query(insert, [Math.abs(cantidad), id_producto, id_stock]);
+                const [res] = await connection.query(insert, [Math.abs(cantidad), id_producto, id_stock, id_sucursal, id_stock]);
                 resumen[id_producto] = { id_detalle_de_stock: res.insertId, sincronizacion: "success_post" }
             }
         }
 
     },
 
-    removeDetalleDeStock: async ({ connection, productos_delete = [], resumen, id_stock }) => {
+    removeDetalleDeStock: async ({ connection, productos_delete = [], resumen, id_stock, id_sucursal }) => {
 
-        const deletDetalles = "DELETE FROM  detalle_de_stock WHERE id_detalle_de_stock = ?";
+        const deletDetalles = `
+            DELETE FROM  detalle_de_stock WHERE id_detalle_de_stock = ? AND id_stock = (
+            SELECT id_stock FROM stock
+            WHERE id_sucursal = ? AND id_stock = ?
+            )
+        `;
 
 
         for (const producto of productos_delete) {
@@ -100,10 +121,11 @@ const detalle_de_stock_model = {
             const {
                 cantidad_sincronizacion,
                 verificarBorrado
-            } = await validation.validationRemoveDetalleDeStock({ id_producto, connection, id_stock })
+            } = await validation.validationRemoveDetalleDeStock({ id_producto, connection, id_stock,id_sucursal })
 
             if (verificarBorrado) {
-                const [{ affectedRows }] = await connection.query(deletDetalles, [id_detalle_de_stock]);
+                const [{ affectedRows }] = await connection.query(deletDetalles, [id_detalle_de_stock, id_sucursal, id_stock]);
+             
                 if (affectedRows == 0) {
                     resumen[id_producto] = { sincronizacion: "info_delete" }
                 } else {

@@ -4,11 +4,9 @@ const sucursales_controler = {
 
     getsucursales: async (req, res, next) => {
 
-
-        if (req.session.sucursal_info) {
+        
             req.session.sucursal_info = {}
             req.session.usuario_info = {}
-        }
 
         try {
             const resultado_sucursales = await sucursales_model.getsucursales()
@@ -28,6 +26,7 @@ const sucursales_controler = {
 
             if (sucursal_info.length == 1) {
                 req.session.sucursal_info = { ...sucursal_info[0], loggeado: true }
+                req.session.usuario_info = {}
                 res.status(200).json({ tipo: "success" })
             } else {
                 res.status(200).json({ tipo: "denied" })

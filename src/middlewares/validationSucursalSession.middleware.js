@@ -2,11 +2,6 @@
 
 export const validationSucursalSessionMiddleware = (req, res, next) => {
 
-    const APP = process.env.APP
-
-    if (APP) return next()
-
-
     const { sucursal_info = {}, usuario_info = {} } = req.session
 
     const { id_sucursal, loggeado } = sucursal_info
@@ -20,6 +15,7 @@ export const validationSucursalSessionMiddleware = (req, res, next) => {
                 redirect: redirect
             }
         )
+       
     }
 
     if (loggeado && !id_usuario) { 

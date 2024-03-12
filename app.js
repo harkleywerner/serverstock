@@ -10,10 +10,11 @@ import transsaciones from "./src/router/transsaciones.router.js"
 import usuarios from "./src/router/usuarios.router.js"
 import { BackEndError } from "./src/utils/errors.utils.js"
 import corsConfigMiddleware from "./src/middlewares/corsConfig.middleware.js"
-import sucursalSessionMiddleware from "./src/middlewares/sucursalSession.middleware.js.js"
+import sessionMiddleware from "./src/middlewares/session.middleware.js.js"
 import { validationSucursalSessionMiddleware } from "./src/middlewares/validationSucursalSession.middleware.js"
 import { validationSucursalLoggeadaMiddleware } from "./src/middlewares/validationSucursalLoggeada.middleware.js"
 import { validationUsuarioSessionMiddleware } from "./src/middlewares/validationUsuarioSession.middleware.js"
+import { sessionDeveloperMiddleware } from "./src/middlewares/sessionDeveloper.middleware.js"
 
 configServer()
 
@@ -24,7 +25,7 @@ const limiter = rateLimitGloalMiddleware()
 
 app.use(express.json())
 app.use(corsConfigMiddleware());
-app.use(sucursalSessionMiddleware())
+app.use(sessionMiddleware())
 
 /* 
 INSTALAR HELMENT PARA CSP
@@ -40,7 +41,7 @@ app.get("/", (req, res) => {
 //2-Luego se verifica en usuarios  si hay una sucursal con loggeado en true.
 //3-Finalmente verifica en las rutas restringidas para el usuario si tiene alguna sessesion activa.
 
-app.use("/", limiter)
+app.use("/", sessionDeveloperMiddleware, limiter)
 app.use("/sucursales", sucursales)
 app.use("/usuarios", validationSucursalLoggeadaMiddleware, usuarios)
 app.use("/stock", validationSucursalSessionMiddleware, stock)

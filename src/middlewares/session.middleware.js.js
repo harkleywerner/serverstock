@@ -1,8 +1,10 @@
 import session from "express-session"
 
-const sucursalSessionMiddleware = () => {
+
+
+const sessionMiddleware = () => {
     return session({ //=> Esta session se encarga de mantener el estado de la sucursal.
-        name :  "sucursalSession",
+        name: "sucursalSession",
         secret: 'stock-1bsf-456g-aff',
         resave: false,
         saveUninitialized: true,
@@ -15,4 +17,4 @@ const sucursalSessionMiddleware = () => {
 
 }
 
-export default sucursalSessionMiddleware
+export default sessionMiddleware
