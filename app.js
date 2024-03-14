@@ -15,6 +15,7 @@ import { validationSucursalSessionMiddleware } from "./src/middlewares/validatio
 import { validationSucursalLoggeadaMiddleware } from "./src/middlewares/validationSucursalLoggeada.middleware.js"
 import { validationUsuarioSessionMiddleware } from "./src/middlewares/validationUsuarioSession.middleware.js"
 import { sessionDeveloperMiddleware } from "./src/middlewares/sessionDeveloper.middleware.js"
+import helmet from "helmet"
 
 configServer()
 
@@ -26,10 +27,7 @@ const limiter = rateLimitGloalMiddleware()
 app.use(express.json())
 app.use(corsConfigMiddleware());
 app.use(sessionMiddleware())
-
-/* 
-INSTALAR HELMENT PARA CSP
-*/
+app.use(helmet())
 
 app.get("/", (req, res) => {
     res.status(301).redirect("/sucursales")
@@ -37,7 +35,7 @@ app.get("/", (req, res) => {
 
 
 //Las validaciones pasan por 3 capas.
-//1-Primera se valida si hay una sucursal con session.
+//1-Primero se valida si hay una sucursal con session.
 //2-Luego se verifica en usuarios  si hay una sucursal con loggeado en true.
 //3-Finalmente verifica en las rutas restringidas para el usuario si tiene alguna sessesion activa.
 
@@ -55,7 +53,7 @@ app.get("/session", (req, res, next) => {
 
     const data = {
         sucursal_info,
-        usuario_info
+        usuario_info,
     }
 
     res.status(200).json({ tipo: "success", data })

@@ -10,7 +10,8 @@ const trassaciones_model = {
         const { id_usuario } = usuario_info
 
         const insert = `
-        INSERT INTO transsaciones (cantidad,id_producto,id_usuario,id_stock)
+        INSERT INTO transsaciones 
+        (cantidad,id_producto,id_usuario,id_stock)
         VALUES(?,?,?,?)  
         `
 
@@ -35,19 +36,19 @@ const trassaciones_model = {
                     total_stock,
                     devoluciones_permitidas,
                     id_stock_actual,
-                    verificacionLength
                 } = await validations.validationAddStock({ connection, id_producto, cantidad, id_stock, id_sucursal })
 
+               
                 const transsacionPositiva = restante > total_stock ? total_stock : restante
 
                 const trassacionNegativa = restante > devoluciones_permitidas ? devoluciones_permitidas : restante
 
                 const verificacion = verificarCantidad ? -trassacionNegativa : transsacionPositiva
 
-                if (verificacionLength ) {
-                    await connection.query(insert, [verificacion, id_producto, id_usuario,id_stock_actual])
+                if (id_stock_actual != undefined) {
+                    await connection.query(insert, [verificacion, id_producto, id_usuario, id_stock_actual])
                     restante -= Math.abs(verificacion)
-                }else {
+                } else {
                     restante = 0
                 }
             }

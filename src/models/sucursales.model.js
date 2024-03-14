@@ -4,7 +4,13 @@ const sucursales_model = {
 
 
     getsucursales: async () => {
-        const select = `SELECT * FROM sucursales`
+        const select = `
+        SELECT COUNT(u.id_usuario) as total_usuarios,
+        s.id_sucursal,s.nombre
+        FROM sucursales s
+        INNER join usuarios u ON u.id_sucursal = s.id_sucursal 
+        GROUP BY s.id_sucursal
+        `
 
         const connection = await pool
 
@@ -23,6 +29,7 @@ const sucursales_model = {
         const connection = await pool
 
         const [results] = await connection.query(select, [id_sucursal, contraseña])
+
 
         return results
     }

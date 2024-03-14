@@ -11,7 +11,8 @@ const sessionMiddleware = () => {
         cookie: {
             // secure : true,//Si establezco esto como true quiere decir que solo acepta solicuted HTTPS
             httpOnly: true,
-            maxAge: 60 * 1000 * 60 * 24 //=> 24 horas
+            maxAge: 60 * 1000 * 60 * 24, //=> 24 horas
+            sameSite: "strict"
         },
     })
 

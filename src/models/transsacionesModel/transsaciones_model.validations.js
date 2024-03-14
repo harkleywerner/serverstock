@@ -1,12 +1,11 @@
 const detalle_de_stock_model_validaciones = {
 
-    validationAddStock: async ({ cantidad, connection, id_producto, id_stock,id_sucursal }) => {
+    validationAddStock: async ({ cantidad, connection, id_producto, id_sucursal ,id_stock}) => {
 
-        //=> Si se le pasa un id_stock que no le corresponde a su id_sucursal, siempre devolvera un res.length = 0
+        //=> Si se le pasa un id_stock que no le corresponde a su id_sucursal, siempre devolvera un tabla vacia
         //Entonces siempre nos aseguramos de que se ingresen los datos en la sucursal correcta.
-        //Y cuando si una cantidad muuy elevado o muy baja a la del stock, cuando termine el ciclo del bucle
-        //Entonces filtrara los elementos en el HAVING no devolviendo nada, debido a que no quedan productos en base a la operacion.
-        
+        //Y cuando si una cantidad muy elevado o muy baja a la del stock, cuando el bucle este realizando su cicle, va verificando depues de cada transsacion
+        //Entonces filtrara los elementos en el HAVING no devolviendo nada, debido a que no quedan productos en base a la transsacion realizadas.
         let select =
             `
             SELECT 
@@ -30,7 +29,7 @@ const detalle_de_stock_model_validaciones = {
             LIMIT 1
     `
 
-    
+
         const [res] = await connection.query(select, [id_sucursal, id_producto, id_stock, cantidad, cantidad])
 
         const { total_stock, devoluciones_permitidas, id_stock: id_stock_actual } = res[0] || {}
@@ -39,7 +38,6 @@ const detalle_de_stock_model_validaciones = {
             total_stock,
             devoluciones_permitidas,
             id_stock_actual,
-            verificacionLength: res.length > 0
         }
     }
 

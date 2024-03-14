@@ -10,7 +10,7 @@ export const validationUsuarioSessionMiddleware = (req, res, next) => {
         res.status(401).json(
             {
                 tipo: "denied",
-                message: "Debes iniciar session con algun usuario",
+                message: "Debes iniciar session con algun usuario.",
                 redirect: "/"
             }
         )

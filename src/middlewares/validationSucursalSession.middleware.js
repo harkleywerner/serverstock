@@ -15,10 +15,10 @@ export const validationSucursalSessionMiddleware = (req, res, next) => {
                 redirect: redirect
             }
         )
-       
+
     }
 
-    if (loggeado && !id_usuario) { 
+    if (loggeado && !id_usuario) {
         response("usuarios")
     }
     else if (!id_sucursal) {
