@@ -44,7 +44,7 @@ const productos_model = {
 
         const connection = await pool
 
-        const [results] = await connection.query(select, [id_sucursal,...params])
+        const [results] = await connection.query(select, [id_sucursal, ...params])
 
         return results
     },
@@ -65,6 +65,7 @@ const productos_model = {
         const clausulas = {
             categoria: "AND c.id_categoria = ?",
             buscador: "AND p.nombre LIKE CONCAT(?,'%')",
+            listaDeIds: "AND p.id_producto NOT IN(?)",
             offset: "LIMIT 15 OFFSET ?"
         }
 
