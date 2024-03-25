@@ -3,6 +3,7 @@ import usuarios_model from "../models/usuario.models.js"
 const usuarios_controler = {
 
     getUsuarios: async (req, res, next) => {
+
         try {
             const resultado_usuarios = await usuarios_model.getUsuarios(req)
             res.status(200).json({ tipo: "success", data: resultado_usuarios })

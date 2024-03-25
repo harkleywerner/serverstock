@@ -15,3 +15,4 @@ SELECT
         GROUP BY id_producto
         ) t ON t.id_producto = s.id_producto
         GROUP BY s.id_producto
+        

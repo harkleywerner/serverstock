@@ -70,13 +70,14 @@ const trassaciones_model = {
 
     getTranssacionByIdStock: async (req) => {
 
+        
         const { sucursal_info = {} } = req.session
         const { id_sucursal } = sucursal_info
-
+        
         const connection = await pool
-
+        
         const { id_producto, id_stock } = req.query
-
+        
         let select = `
         SELECT
         CONVERT(-COALESCE(SUM(t.cantidad), 0),signed) AS devoluciones_permitidas,

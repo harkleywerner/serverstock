@@ -60,18 +60,20 @@ const productos_model = {
         INNER JOIN categorias c ON c.id_categoria = p.id_categoria 
         WHERE p.estado = "activo"
          `
-        const lista = { ...req.body, offset: parseInt(req.body.offset || 0) }
+         
+         const lista = { ...req.body, offset: parseInt(req.body.offset || 0) }
 
         const clausulas = {
             categoria: "AND c.id_categoria = ?",
             buscador: "AND p.nombre LIKE CONCAT(?,'%')",
-            listaDeIds: "AND p.id_producto NOT IN(?)",
+            listaDeIds: "AND p.id_producto NOT IN (?)",
             offset: "LIMIT 15 OFFSET ?"
         }
 
         const [params, selectRestante] = concatenarClausulasUtils({ lista, clausulas })
 
         select += selectRestante
+
 
         const [results] = await connection.query(select, [...params])
 

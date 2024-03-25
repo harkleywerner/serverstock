@@ -2,10 +2,12 @@ import sucursales_model from "../models/sucursales.model.js"
 
 const sucursales_controler = {
 
+
     getsucursales: async (req, res, next) => {
 
-        req.session.sucursal_info = {}
-        req.session.usuario_info = {}
+        if (req.session?.sucursal_info) {
+            req.session.destroy()
+        }
 
         try {
             const resultado_sucursales = await sucursales_model.getsucursales()
@@ -18,8 +20,7 @@ const sucursales_controler = {
 
     getSucursalLogout: async (req, res) => {
 
-        req.session.sucursal_info = {}
-        req.session.usuario_info = {}
+        req.session.destroy()
 
         res.status(200).json({ tipo: "success" })
     },

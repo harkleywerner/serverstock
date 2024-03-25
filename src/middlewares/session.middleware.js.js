@@ -7,7 +7,7 @@ const sessionMiddleware = () => {
         name: "sucursalSession",
         secret: 'stock-1bsf-456g-aff',
         resave: false,
-        saveUninitialized: true,
+        saveUninitialized: false,
         cookie: {
             // secure : true,//Si establezco esto como true quiere decir que solo acepta solicuted HTTPS
             httpOnly: true,
